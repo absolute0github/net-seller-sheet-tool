@@ -1,0 +1,103 @@
+/* Net Seller Sheet Admin Styles */
+
+.nss-dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.stat-box {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 15px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.stat-box h3 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+}
+
+.stat-value {
+    margin: 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #0073aa;
+}
+
+.nss-recent-sheets,
+.nss-quick-links {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 15px;
+    margin: 20px 0;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.nss-quick-links ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nss-quick-links li {
+    margin: 8px 0;
+}
+
+.nss-quick-links a {
+    color: #0073aa;
+    text-decoration: none;
+    padding: 4px 8px;
+}
+
+.nss-quick-links a:hover {
+    color: #005a87;
+    text-decoration: underline;
+}
+
+.nss-fee-tabs {
+    margin: 20px 0;
+}
+
+.nss-fee-content {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 15px;
+    margin: 20px 0;
+}
+
+.nss-fee-content .button {
+    margin-bottom: 15px;
+}
+
+.nss-sheets-list {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 15px;
+}
+
+.button-link-delete {
+    color: #a00;
+}
+
+.button-link-delete:hover {
+    color: #700;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nss-dashboard-stats {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+
+    .stat-value {
+        font-size: 18px;
+    }
+}

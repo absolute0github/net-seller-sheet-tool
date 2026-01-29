@@ -1,0 +1,18 @@
+# Dependencies
+/vendor/
+
+# OS files
+.DS_Store
+._*
+Thumbs.db
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-*
+
+# Logs
+*.log
+
+# Local config
+.env

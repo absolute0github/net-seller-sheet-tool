@@ -1,0 +1,347 @@
+/* Net Seller Sheet Frontend Styles */
+
+.nss-calculator-container,
+.nss-my-sheets-container,
+.nss-sheet-detail-container,
+.nss-profile-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.nss-calculator-header,
+.nss-my-sheets-header,
+.nss-sheet-header,
+.nss-profile-header {
+    margin-bottom: 30px;
+    border-bottom: 2px solid #0073aa;
+    padding-bottom: 15px;
+}
+
+.nss-calculator-header h2,
+.nss-my-sheets-header h2,
+.nss-sheet-header h2,
+.nss-profile-header h2 {
+    margin: 0 0 10px 0;
+    color: #0073aa;
+}
+
+.nss-calculator-header p,
+.nss-my-sheets-header p {
+    margin: 0;
+    color: #666;
+}
+
+.nss-sheet-meta {
+    font-size: 14px;
+    color: #999;
+}
+
+/* Forms */
+.nss-form {
+    margin: 20px 0;
+}
+
+.nss-form-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.nss-form-section h3,
+.nss-form-section h4 {
+    margin-top: 0;
+    color: #0073aa;
+}
+
+.nss-form-group {
+    margin-bottom: 15px;
+}
+
+.nss-form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #333;
+}
+
+.nss-form-group input[type="text"],
+.nss-form-group input[type="email"],
+.nss-form-group input[type="password"],
+.nss-form-group input[type="number"],
+.nss-form-group input[type="date"],
+.nss-form-group select,
+.nss-form-group textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.nss-form-group input[type="text"]:focus,
+.nss-form-group input[type="email"]:focus,
+.nss-form-group input[type="password"]:focus,
+.nss-form-group input[type="number"]:focus,
+.nss-form-group input[type="date"]:focus,
+.nss-form-group select:focus,
+.nss-form-group textarea:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 5px rgba(0, 115, 170, 0.3);
+    outline: none;
+}
+
+.nss-form-group input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.nss-form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.nss-loan-payoffs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.nss-loan-payoffs input {
+    flex: 1;
+    min-width: 150px;
+}
+
+.description {
+    font-size: 13px;
+    color: #999;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Buttons */
+.nss-button {
+    display: inline-block;
+    padding: 8px 16px;
+    margin: 5px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.nss-button-primary {
+    background: #0073aa;
+    color: #fff;
+}
+
+.nss-button-primary:hover {
+    background: #005a87;
+}
+
+.nss-button-secondary {
+    background: #ddd;
+    color: #333;
+}
+
+.nss-button-secondary:hover {
+    background: #ccc;
+}
+
+.nss-button-small {
+    padding: 4px 8px;
+    font-size: 12px;
+    margin: 2px;
+}
+
+.nss-form-actions {
+    margin-top: 30px;
+    text-align: center;
+}
+
+/* Results */
+.nss-results {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.nss-results h3 {
+    margin-top: 0;
+    color: #0073aa;
+}
+
+.nss-results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.nss-result-item {
+    padding: 15px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.nss-result-item label {
+    display: block;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.nss-result-value {
+    display: block;
+    font-size: 20px;
+    font-weight: bold;
+    color: #0073aa;
+}
+
+.nss-result-item.highlight {
+    background: #f0f7ff;
+    border-color: #0073aa;
+}
+
+.nss-result-item.total {
+    border-top: 2px solid #0073aa;
+    font-weight: 600;
+}
+
+/* Tables */
+.nss-sheets-table,
+.nss-results-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+.nss-sheets-table thead,
+.nss-results-table thead {
+    background: #f9f9f9;
+}
+
+.nss-sheets-table th,
+.nss-results-table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #ddd;
+}
+
+.nss-sheets-table td,
+.nss-results-table td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+.nss-sheets-table tbody tr:hover {
+    background: #f9f9f9;
+}
+
+.nss-results-table .section-header {
+    background: #f9f9f9;
+    font-weight: 600;
+}
+
+.nss-results-table .total-row {
+    background: #f9f9f9;
+    border-top: 2px solid #0073aa;
+}
+
+.nss-results-table .net-proceeds-row {
+    background: #f0f7ff;
+    border-top: 2px solid #0073aa;
+}
+
+.nss-amount {
+    text-align: right;
+    font-weight: 600;
+    color: #0073aa;
+}
+
+/* Messages */
+.nss-message {
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 4px;
+    border-left: 4px solid;
+}
+
+.nss-message.success {
+    background: #dff0d8;
+    color: #3c763d;
+    border-color: #5cb85c;
+}
+
+.nss-message.error {
+    background: #f2dede;
+    color: #a94442;
+    border-color: #d9534f;
+}
+
+.nss-error {
+    color: #a94442;
+    padding: 15px;
+    background: #f2dede;
+    border: 1px solid #d9534f;
+    border-radius: 4px;
+    margin: 20px 0;
+}
+
+.nss-loading {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+}
+
+.nss-empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nss-calculator-container,
+    .nss-my-sheets-container,
+    .nss-sheet-detail-container,
+    .nss-profile-container {
+        padding: 10px;
+    }
+
+    .nss-form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .nss-results-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .nss-sheets-table,
+    .nss-results-table {
+        font-size: 13px;
+    }
+
+    .nss-sheets-table th,
+    .nss-sheets-table td,
+    .nss-results-table th,
+    .nss-results-table td {
+        padding: 8px;
+    }
+
+    .nss-button {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+}
