@@ -107,7 +107,7 @@ $is_dev = (strpos(get_site_url(), '.local') !== false) || (defined('WP_DEBUG') &
 
     <?php if ($is_dev): ?>
     <script>
-    (function($) {
+    jQuery(document).ready(function($) {
         $('#nss-fill-test-data').on('click', function() {
             // Generate a closing date 30 days from now
             var closingDate = new Date();
@@ -129,7 +129,7 @@ $is_dev = (strpos(get_site_url(), '.local') !== false) || (defined('WP_DEBUG') &
             $('#closing_date').val(dateStr);
             $('#owner_policy').prop('checked', true);
         });
-    })(jQuery);
+    });
     </script>
     <?php endif; ?>
 
