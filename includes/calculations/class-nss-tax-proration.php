@@ -43,12 +43,13 @@ class NSS_Tax_Proration {
             ];
         }
 
+        // tax_rate is stored as whole number (e.g., 1.5 = 1.5%)
         $tax_rate = $tax_data->tax_rate;
 
         // Calculate annual tax
         $annual_tax = NSS_Precision_Math::percentage(
             $this->sales_price,
-            $tax_rate * 100
+            $tax_rate
         );
 
         // Calculate daily rate
@@ -123,6 +124,6 @@ class NSS_Tax_Proration {
      */
     private function get_annual_tax() {
         $rate = $this->get_tax_rate();
-        return NSS_Precision_Math::percentage($this->sales_price, $rate * 100);
+        return NSS_Precision_Math::percentage($this->sales_price, $rate);
     }
 }

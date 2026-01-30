@@ -51,9 +51,10 @@ class NSS_Property_Value {
             ];
         }
 
+        // rate is stored as whole number (e.g., 3 = 3%)
         $commission = NSS_Precision_Math::percentage(
             $this->sales_price,
-            $tier->rate * 100
+            $tier->rate
         );
 
         return [

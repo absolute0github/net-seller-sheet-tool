@@ -82,11 +82,11 @@ class NSS_Calculator {
             return;
         }
 
-        // Calculate fee
+        // Calculate fee (fee_percentage is stored as whole number, e.g., 3 = 3%)
         if ($fee_data->fee_percentage > 0) {
             $total_fee = NSS_Precision_Math::percentage(
                 $sales_price,
-                $fee_data->fee_percentage * 100
+                $fee_data->fee_percentage
             );
         } else {
             $total_fee = $fee_data->flat_fee;

@@ -12,6 +12,40 @@
     });
 
     /**
+     * Show admin notice
+     *
+     * @param {string} message
+     * @param {string} type - 'success', 'error', 'warning', 'info'
+     */
+    function showNotice(message, type) {
+        type = type || 'success';
+        const $notice = $('<div class="notice notice-' + type + ' is-dismissible nss-notice"><p>' + message + '</p><button type="button" class="notice-dismiss"><span class="screen-reader-text">Dismiss</span></button></div>');
+
+        // Remove existing notices
+        $('.nss-notice').remove();
+
+        // Add notice after the page title
+        $('.wrap h1').first().after($notice);
+
+        // Scroll to top to see notice
+        $('html, body').animate({ scrollTop: 0 }, 200);
+
+        // Auto-dismiss after 5 seconds
+        setTimeout(function() {
+            $notice.fadeOut(function() {
+                $(this).remove();
+            });
+        }, 5000);
+
+        // Manual dismiss
+        $notice.on('click', '.notice-dismiss', function() {
+            $notice.fadeOut(function() {
+                $(this).remove();
+            });
+        });
+    }
+
+    /**
      * Initialize fee management handlers
      */
     function initFeeHandlers() {
@@ -24,6 +58,10 @@
             $('#nss-modal-title').text('Add New Fee');
             $('#nss-fee-id').val('');
             $form[0].reset();
+            // Ensure is_active is checked for new fees
+            $('#is_active').prop('checked', true);
+            // Reset seller_pays_percentage to default
+            $('#seller_pays_percentage').val('1.0');
             $modal.show();
         });
 
@@ -53,21 +91,26 @@
                 type: 'POST',
                 data: formData + '&action=' + action + '&_nonce=' + nssAdmin.nonce,
                 success: function(response) {
+                    $modal.hide();
                     if (response.success) {
-                        alert(response.data.message);
-                        location.reload();
+                        showNotice(response.data.message, 'success');
+                        // Reload after short delay so user sees the notice
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
                     } else {
-                        let errorMsg = 'Error: ';
+                        let errorMsg = '';
                         if (typeof response.data === 'object') {
-                            errorMsg += Object.values(response.data).join(', ');
+                            errorMsg = Object.values(response.data).join(', ');
                         } else {
-                            errorMsg += response.data;
+                            errorMsg = response.data;
                         }
-                        alert(errorMsg);
+                        showNotice(errorMsg, 'error');
                     }
                 },
                 error: function() {
-                    alert('AJAX request failed');
+                    $modal.hide();
+                    showNotice('Request failed. Please try again.', 'error');
                 }
             });
         });
@@ -75,14 +118,44 @@
         // Edit fee - open modal with data
         $(document).on('click', '.nss-edit-fee', function(e) {
             e.preventDefault();
-            const $row = $(this).closest('tr');
             const feeId = $(this).data('fee-id');
+            const feeData = $(this).data('fee');
 
             $('#nss-modal-title').text('Edit Fee');
             $('#nss-fee-id').val(feeId);
 
-            // Note: For full edit support, you'd need to fetch fee data via AJAX
-            // For now, this opens the modal for the user to re-enter data
+            // Reset form first
+            $form[0].reset();
+
+            // Populate form fields from fee data
+            if (feeData) {
+                // Common fields
+                if (feeData.county_name) $('#county_name').val(feeData.county_name);
+                if (feeData.state) $('#state').val(feeData.state);
+
+                // Conveyance fields
+                if (feeData.fee_percentage !== undefined) $('#fee_percentage').val(feeData.fee_percentage);
+                if (feeData.flat_fee !== undefined) $('#flat_fee').val(feeData.flat_fee);
+                if (feeData.seller_pays_percentage !== undefined) $('#seller_pays_percentage').val(feeData.seller_pays_percentage);
+
+                // Tax rate fields
+                if (feeData.tax_rate !== undefined) $('#tax_rate').val(feeData.tax_rate);
+                if (feeData.tax_type) $('#tax_type').val(feeData.tax_type);
+
+                // Property value fields
+                if (feeData.tier_name) $('#tier_name').val(feeData.tier_name);
+                if (feeData.min_price !== undefined) $('#min_price').val(feeData.min_price);
+                if (feeData.max_price !== undefined) $('#max_price').val(feeData.max_price);
+                if (feeData.rate !== undefined) $('#rate').val(feeData.rate);
+
+                // Title closing/exam and static fee fields
+                if (feeData.fee_amount !== undefined) $('#fee_amount').val(feeData.fee_amount);
+                if (feeData.fee_type) $('#static_fee_type').val(feeData.fee_type);
+
+                // Active status
+                $('#is_active').prop('checked', feeData.is_active == 1);
+            }
+
             $modal.show();
         });
 
@@ -112,13 +185,13 @@
                         btn.closest('tr').fadeOut(function() {
                             $(this).remove();
                         });
-                        alert(response.data.message);
+                        showNotice(response.data.message, 'success');
                     } else {
-                        alert('Error: ' + response.data);
+                        showNotice(response.data, 'error');
                     }
                 },
                 error: function() {
-                    alert('AJAX request failed');
+                    showNotice('Request failed. Please try again.', 'error');
                 }
             });
         });
@@ -145,14 +218,17 @@
                         // Toggle button text
                         const newText = btn.text() === 'Activate' ? 'Deactivate' : 'Activate';
                         btn.text(newText);
-                        alert(response.data.message);
-                        location.reload();
+                        showNotice(response.data.message, 'success');
+                        // Reload after short delay
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
                     } else {
-                        alert('Error: ' + response.data);
+                        showNotice(response.data, 'error');
                     }
                 },
                 error: function() {
-                    alert('AJAX request failed');
+                    showNotice('Request failed. Please try again.', 'error');
                 }
             });
         });

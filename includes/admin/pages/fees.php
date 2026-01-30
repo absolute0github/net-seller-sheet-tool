@@ -14,8 +14,8 @@ if (!in_array($fee_type, $valid_types)) {
     $fee_type = 'conveyance';
 }
 
-// Get fees for current type
-$fees = NSS_Fee::get_active($fee_type);
+// Get all fees for current type (active and inactive for admin view)
+$fees = NSS_Fee::get_all($fee_type);
 ?>
 
 <div class="wrap">
@@ -71,7 +71,10 @@ $fees = NSS_Fee::get_active($fee_type);
                             <td><?php echo $fee->is_active ? '<span class="dashicons dashicons-yes"></span> Active' : '<span class="dashicons dashicons-no"></span> Inactive'; ?></td>
                             <td><?php echo NSS_Formatting::date($fee->created_at); ?></td>
                             <td>
-                                <button class="button button-small nss-edit-fee" data-fee-id="<?php echo esc_attr($fee->id); ?>" data-fee-type="<?php echo esc_attr($fee_type); ?>">Edit</button>
+                                <button class="button button-small nss-edit-fee"
+                                    data-fee-id="<?php echo esc_attr($fee->id); ?>"
+                                    data-fee-type="<?php echo esc_attr($fee_type); ?>"
+                                    data-fee="<?php echo esc_attr(json_encode($fee)); ?>">Edit</button>
                                 <button class="button button-small nss-toggle-fee" data-fee-id="<?php echo esc_attr($fee->id); ?>" data-fee-type="<?php echo esc_attr($fee_type); ?>">
                                     <?php echo $fee->is_active ? 'Deactivate' : 'Activate'; ?>
                                 </button>
@@ -184,6 +187,13 @@ $fees = NSS_Fee::get_active($fee_type);
                         <input type="number" name="fee_amount" id="fee_amount" step="0.01" min="0" class="small-text" required>
                     </p>
                 <?php endif; ?>
+
+                <p>
+                    <label>
+                        <input type="checkbox" name="is_active" id="is_active" value="1" checked>
+                        Active
+                    </label>
+                </p>
 
                 <p>
                     <button type="submit" class="button button-primary">Save Fee</button>

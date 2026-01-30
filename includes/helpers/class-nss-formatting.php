@@ -19,12 +19,14 @@ class NSS_Formatting {
     /**
      * Format percentage
      *
+     * Values are stored as whole percentages (3 = 3%, 1.5 = 1.5%)
+     *
      * @param mixed $value
      * @param int $decimals
      * @return string
      */
     public static function percentage($value, $decimals = 2) {
-        return number_format((float) $value * 100, $decimals) . '%';
+        return number_format((float) $value, $decimals) . '%';
     }
 
     /**

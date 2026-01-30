@@ -68,20 +68,24 @@ class NSS_Fee {
     public function save($data) {
         global $wpdb;
 
+        // Build format array based on data types
+        $formats = $this->get_formats($data);
+
         if ($this->id) {
-            // Update
+            // Update - only use new data, not merged with old
             $updated = $wpdb->update(
                 $this->table_name,
-                array_merge($this->data, $data),
+                $data,
                 ['id' => $this->id],
-                [],
+                $formats,
                 ['%d']
             );
             return $updated !== false ? $this->id : false;
         } else {
             // Insert
             $data['created_at'] = current_time('mysql');
-            $inserted = $wpdb->insert($this->table_name, $data);
+            $formats[] = '%s'; // Add format for created_at
+            $inserted = $wpdb->insert($this->table_name, $data, $formats);
             if ($inserted) {
                 $this->id = $wpdb->insert_id;
                 $this->data = $data;
@@ -89,6 +93,26 @@ class NSS_Fee {
             }
             return false;
         }
+    }
+
+    /**
+     * Get format strings for wpdb based on data types
+     *
+     * @param array $data
+     * @return array
+     */
+    private function get_formats($data) {
+        $formats = [];
+        foreach ($data as $key => $value) {
+            if (is_int($value) || is_bool($value)) {
+                $formats[] = '%d';
+            } elseif (is_float($value)) {
+                $formats[] = '%f';
+            } else {
+                $formats[] = '%s';
+            }
+        }
+        return $formats;
     }
 
     /**
@@ -156,6 +180,44 @@ class NSS_Fee {
     public static function get_active($fee_type) {
         global $wpdb;
 
+        $table = self::get_table_name($fee_type);
+        if (!$table) {
+            return [];
+        }
+
+        return $wpdb->get_results(
+            "SELECT * FROM {$table} WHERE is_active = 1 ORDER BY created_at DESC"
+        ) ?: [];
+    }
+
+    /**
+     * Get all fees (for admin view)
+     *
+     * @param string $fee_type
+     * @return array
+     */
+    public static function get_all($fee_type) {
+        global $wpdb;
+
+        $table = self::get_table_name($fee_type);
+        if (!$table) {
+            return [];
+        }
+
+        return $wpdb->get_results(
+            "SELECT * FROM {$table} ORDER BY is_active DESC, created_at DESC"
+        ) ?: [];
+    }
+
+    /**
+     * Get table name for fee type
+     *
+     * @param string $fee_type
+     * @return string|null
+     */
+    private static function get_table_name($fee_type) {
+        global $wpdb;
+
         $type_map = [
             'conveyance' => 'nss_conveyance_fees',
             'tax_rate' => 'nss_tax_rates',
@@ -165,11 +227,7 @@ class NSS_Fee {
             'static_fee' => 'nss_static_title_fees',
         ];
 
-        $table = $wpdb->prefix . ($type_map[$fee_type] ?? '');
-
-        return $wpdb->get_results(
-            "SELECT * FROM {$table} WHERE is_active = 1 ORDER BY created_at DESC"
-        ) ?: [];
+        return isset($type_map[$fee_type]) ? $wpdb->prefix . $type_map[$fee_type] : null;
     }
 
     /**
