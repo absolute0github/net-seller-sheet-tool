@@ -109,9 +109,11 @@
                 if (response.success) {
                     displayResults(response.data);
                     showSuccessMessage('Calculation complete!');
-                    // Show save/PDF buttons only if user can save
+                    // Show save button only if user can save
+                    // PDF button shows after saving
                     if (nssData.can_save) {
-                        $('#nss-save-btn, #nss-download-pdf-btn').show();
+                        $('#nss-save-btn').show();
+                        $('#nss-download-pdf-btn').hide(); // Hidden until saved
                     }
                     // Show guest notice if not logged in
                     $('#nss-guest-notice').show();
@@ -149,6 +151,9 @@
         $('#nss-results').show();
     }
 
+    // Store the current sheet ID after saving
+    var currentSheetId = null;
+
     /**
      * Save sheet to database
      */
@@ -166,18 +171,25 @@
             type: 'POST',
             data: {
                 action: 'nss_save_sheet',
-                nonce: data.nonce,
+                nonce: nssData.nonce,
                 sheet_data: JSON.stringify(data)
             },
             success: function(response) {
                 if (response.success) {
+                    currentSheetId = response.data.id;
                     alert('Sheet saved successfully!');
+                    // Enable PDF download now that we have a sheet ID
+                    $('#nss-download-pdf-btn').prop('disabled', false).show();
                 } else {
                     showError(response.data.message || 'Error saving sheet');
                 }
             },
-            error: function() {
-                showError('Error saving sheet');
+            error: function(xhr) {
+                var msg = 'Error saving sheet';
+                if (xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
+                    msg = xhr.responseJSON.data.message;
+                }
+                showError(msg);
             }
         });
     }
@@ -186,7 +198,12 @@
      * Download PDF
      */
     function downloadPDF(sheetId) {
-        const pdfUrl = nssData.ajax_url + '?action=nss_download_pdf&sheet_id=' + sheetId + '&nonce=' + nssData.nonce;
+        var id = sheetId || currentSheetId;
+        if (!id) {
+            alert('Please save the sheet first before downloading PDF.');
+            return;
+        }
+        const pdfUrl = nssData.ajax_url + '?action=nss_download_pdf&sheet_id=' + id + '&nonce=' + nssData.nonce;
         window.location.href = pdfUrl;
     }
 

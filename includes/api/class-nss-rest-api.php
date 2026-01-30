@@ -251,10 +251,10 @@ class NSS_REST_API {
     }
 
     public function ajax_save_sheet() {
-        check_ajax_referer('nss_frontend_nonce');
+        check_ajax_referer('nss_frontend_nonce', 'nonce');
 
         if (!current_user_can('create_nss_sheets')) {
-            wp_send_json_error('Permission denied', 403);
+            wp_send_json_error(['message' => 'Permission denied. Please ensure you are logged in.'], 403);
         }
 
         $user_id = get_current_user_id();
@@ -266,12 +266,12 @@ class NSS_REST_API {
         if ($sheet_id) {
             wp_send_json_success(['id' => $sheet_id]);
         } else {
-            wp_send_json_error('Failed to save sheet');
+            wp_send_json_error(['message' => 'Failed to save sheet']);
         }
     }
 
     public function ajax_delete_sheet() {
-        check_ajax_referer('nss_frontend_nonce');
+        check_ajax_referer('nss_frontend_nonce', 'nonce');
 
         $sheet_id = intval($_POST['sheet_id']);
         $user_id = get_current_user_id();
@@ -302,7 +302,7 @@ class NSS_REST_API {
     }
 
     public function ajax_update_profile() {
-        check_ajax_referer('nss_frontend_nonce');
+        check_ajax_referer('nss_profile_nonce', 'nonce');
 
         $user_id = get_current_user_id();
         $data = wp_unslash($_POST);
