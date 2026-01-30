@@ -109,3 +109,10 @@ Assets are conditionally enqueued:
 - Admin CSS/JS only load on NSS admin pages
 - Frontend CSS/JS only load on pages with shortcodes
 - Vendor: `decimal.min.js` (Decimal.js v10.4.3) for client-side precision math
+
+## Development Workflow
+
+- Document all significant changes in `CHANGELOG.md`
+- When adding new features, update this file if architecture changes
+- Commit after completing each feature or fix
+- Push to GitHub after commits are ready
