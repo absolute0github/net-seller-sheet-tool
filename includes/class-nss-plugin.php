@@ -98,14 +98,7 @@ class NSS_Plugin {
      * Register custom capabilities
      */
     private function register_capabilities() {
-        $admin_role = get_role('administrator');
-        $user_role = get_role('subscriber');
-
-        if (!$admin_role || !$user_role) {
-            return;
-        }
-
-        // User capabilities
+        // User capabilities - for subscribers and other basic roles
         $user_caps = [
             'view_nss_sheets',
             'create_nss_sheets',
@@ -123,15 +116,22 @@ class NSS_Plugin {
             'manage_nss_settings',
         ]);
 
-        // Add capabilities to roles
-        foreach ($user_caps as $cap) {
-            if (!$user_role->has_cap($cap)) {
-                $user_role->add_cap($cap);
+        // Roles that should have user capabilities
+        $user_roles = ['subscriber', 'contributor', 'author', 'editor'];
+
+        foreach ($user_roles as $role_name) {
+            $role = get_role($role_name);
+            if ($role) {
+                foreach ($user_caps as $cap) {
+                    $role->add_cap($cap);
+                }
             }
         }
 
-        foreach ($admin_caps as $cap) {
-            if (!$admin_role->has_cap($cap)) {
+        // Add admin capabilities
+        $admin_role = get_role('administrator');
+        if ($admin_role) {
+            foreach ($admin_caps as $cap) {
                 $admin_role->add_cap($cap);
             }
         }

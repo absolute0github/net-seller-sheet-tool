@@ -292,8 +292,31 @@ class NSS_REST_API {
         $sheet_id = intval($_GET['sheet_id'] ?? 0);
         $user_id = get_current_user_id();
 
-        if (!$sheet_id || !NSS_Security::can_edit_sheet($sheet_id, $user_id)) {
-            wp_die('Permission denied');
+        if (!$sheet_id) {
+            wp_die('No sheet ID provided. Please save the sheet first.');
+        }
+
+        if (!$user_id) {
+            wp_die('You must be logged in to download PDFs.');
+        }
+
+        if (!current_user_can('download_nss_pdf')) {
+            wp_die('You do not have permission to download PDFs. Please contact the administrator.');
+        }
+
+        // Check sheet ownership
+        global $wpdb;
+        $sheet_owner = $wpdb->get_var($wpdb->prepare(
+            "SELECT user_id FROM {$wpdb->prefix}nss_sheets WHERE id = %d",
+            $sheet_id
+        ));
+
+        if (!$sheet_owner) {
+            wp_die('Sheet not found.');
+        }
+
+        if ($sheet_owner != $user_id && !current_user_can('edit_all_nss_sheets')) {
+            wp_die('You can only download your own sheets.');
         }
 
         $sheet = new NSS_Sheet($sheet_id);
