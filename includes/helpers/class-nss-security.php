@@ -155,8 +155,9 @@ class NSS_Security {
                 ];
 
             case 'static_fee':
+                $static_type = $data['static_fee_type'] ?? $data['fee_type'] ?? '';
                 return [
-                    'fee_type' => in_array($data['fee_type'] ?? '', ['courier', 'deed_prep', 'wire_transfer']) ? $data['fee_type'] : '',
+                    'fee_type' => in_array($static_type, ['courier', 'deed_prep', 'wire_transfer']) ? $static_type : '',
                     'fee_amount' => floatval($data['fee_amount'] ?? 0),
                     'is_active' => isset($data['is_active']) ? 1 : 0,
                 ];

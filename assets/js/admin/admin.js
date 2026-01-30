@@ -15,6 +15,77 @@
      * Initialize fee management handlers
      */
     function initFeeHandlers() {
+        const $modal = $('#nss-fee-modal');
+        const $form = $('#nss-fee-form');
+
+        // Open modal for adding new fee
+        $(document).on('click', '#nss-add-fee-btn', function(e) {
+            e.preventDefault();
+            $('#nss-modal-title').text('Add New Fee');
+            $('#nss-fee-id').val('');
+            $form[0].reset();
+            $modal.show();
+        });
+
+        // Close modal
+        $(document).on('click', '.nss-modal-close, .nss-modal-cancel', function(e) {
+            e.preventDefault();
+            $modal.hide();
+        });
+
+        // Close modal on outside click
+        $(window).on('click', function(e) {
+            if ($(e.target).is($modal)) {
+                $modal.hide();
+            }
+        });
+
+        // Submit fee form
+        $form.on('submit', function(e) {
+            e.preventDefault();
+
+            const feeId = $('#nss-fee-id').val();
+            const action = feeId ? 'nss_update_fee' : 'nss_create_fee';
+            const formData = $form.serialize();
+
+            $.ajax({
+                url: nssAdmin.ajax_url,
+                type: 'POST',
+                data: formData + '&action=' + action + '&_nonce=' + nssAdmin.nonce,
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.data.message);
+                        location.reload();
+                    } else {
+                        let errorMsg = 'Error: ';
+                        if (typeof response.data === 'object') {
+                            errorMsg += Object.values(response.data).join(', ');
+                        } else {
+                            errorMsg += response.data;
+                        }
+                        alert(errorMsg);
+                    }
+                },
+                error: function() {
+                    alert('AJAX request failed');
+                }
+            });
+        });
+
+        // Edit fee - open modal with data
+        $(document).on('click', '.nss-edit-fee', function(e) {
+            e.preventDefault();
+            const $row = $(this).closest('tr');
+            const feeId = $(this).data('fee-id');
+
+            $('#nss-modal-title').text('Edit Fee');
+            $('#nss-fee-id').val(feeId);
+
+            // Note: For full edit support, you'd need to fetch fee data via AJAX
+            // For now, this opens the modal for the user to re-enter data
+            $modal.show();
+        });
+
         // Delete fee
         $(document).on('click', '.nss-delete-fee', function(e) {
             e.preventDefault();
