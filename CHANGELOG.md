@@ -8,6 +8,10 @@ All notable changes to the Net Seller Sheet plugin will be documented in this fi
 - Fee management modal for creating new fees via admin interface
 - Modal form supports all 6 fee types (conveyance, tax rate, property value, title closing, title exam, static fees)
 - JavaScript handlers for modal open/close/submit functionality
+- Address autocomplete powered by Radar.io API
+- ZIP-to-county lookup fallback for addresses without county data
+- New database table `nss_zip_county` for Ohio ZIP-county mapping
+- Settings page options for Radar.io API key, enable/disable autocomplete, and Ohio restriction
 
 ### Fixed
 - Removed reference to non-existent `class-nss-pdf-template.php` that prevented plugin activation

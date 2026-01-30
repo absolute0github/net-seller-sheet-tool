@@ -137,6 +137,18 @@ class NSS_Database {
             KEY is_active (is_active)
         ) $charset_collate;";
 
+        // 8. ZIP to County mapping table (for Ohio)
+        $sql[] = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}nss_zip_county (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            zip_code VARCHAR(5) NOT NULL,
+            county_name VARCHAR(100) NOT NULL,
+            city VARCHAR(100),
+            state VARCHAR(2) DEFAULT 'OH',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            KEY zip_code (zip_code),
+            KEY county_name (county_name)
+        ) $charset_collate;";
+
         // Execute all SQL statements
         foreach ($sql as $statement) {
             dbDelta($statement);
@@ -157,6 +169,7 @@ class NSS_Database {
             'nss_title_closing_fees',
             'nss_title_exam_fees',
             'nss_static_title_fees',
+            'nss_zip_county',
         ];
 
         foreach ($tables as $table) {

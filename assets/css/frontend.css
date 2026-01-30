@@ -311,6 +311,64 @@
     color: #999;
 }
 
+/* Address Autocomplete */
+.nss-autocomplete-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.nss-autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+}
+
+.nss-autocomplete-item {
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.15s ease;
+}
+
+.nss-autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.nss-autocomplete-item:hover,
+.nss-autocomplete-item.active {
+    background: #f5f9fc;
+}
+
+.nss-autocomplete-address {
+    display: block;
+    font-size: 14px;
+    color: #333;
+}
+
+.nss-autocomplete-county {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+}
+
+.nss-autocomplete-loading {
+    padding: 15px;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .nss-calculator-container,
