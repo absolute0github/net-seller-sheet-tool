@@ -8,6 +8,9 @@ $user_id = get_current_user_id();
 $user_meta = $is_logged_in ? get_userdata($user_id) : null;
 $company_name = $is_logged_in ? get_user_meta($user_id, 'nss_company', true) : '';
 $can_save = $is_logged_in && current_user_can('create_nss_sheets');
+
+// Check if this is a dev environment
+$is_dev = (strpos(get_site_url(), '.local') !== false) || (defined('WP_DEBUG') && WP_DEBUG);
 ?>
 
 <div class="nss-calculator-container">
@@ -90,6 +93,9 @@ $can_save = $is_logged_in && current_user_can('create_nss_sheets');
         </div>
 
         <div class="nss-form-actions">
+            <?php if ($is_dev): ?>
+                <button type="button" id="nss-fill-test-data" class="nss-button" style="background:#9c27b0;color:#fff;">Fill Test Data</button>
+            <?php endif; ?>
             <button type="button" id="nss-calculate-btn" class="nss-button nss-button-primary">Calculate</button>
             <button type="reset" class="nss-button nss-button-secondary">Clear</button>
             <?php if ($can_save): ?>
@@ -98,6 +104,34 @@ $can_save = $is_logged_in && current_user_can('create_nss_sheets');
             <?php endif; ?>
         </div>
     </form>
+
+    <?php if ($is_dev): ?>
+    <script>
+    (function($) {
+        $('#nss-fill-test-data').on('click', function() {
+            // Generate a closing date 30 days from now
+            var closingDate = new Date();
+            closingDate.setDate(closingDate.getDate() + 30);
+            var dateStr = closingDate.toISOString().split('T')[0];
+
+            // Fill test data
+            $('#property_address').val('123 Main Street');
+            $('#property_city').val('Columbus');
+            $('#property_state').val('OH');
+            $('#property_county').val('Franklin');
+            $('#property_zip').val('43215');
+            $('#sales_price').val('350000');
+            $('input[name="loan_payoff_1"]').val('180000');
+            $('input[name="loan_payoff_2"]').val('25000');
+            $('input[name="loan_payoff_3"]').val('');
+            $('#wire_fee').val('35');
+            $('#hoa_fees').val('250');
+            $('#closing_date').val(dateStr);
+            $('#owner_policy').prop('checked', true);
+        });
+    })(jQuery);
+    </script>
+    <?php endif; ?>
 
     <?php if (!$is_logged_in): ?>
     <div class="nss-guest-notice" id="nss-guest-notice" style="display:none;">
