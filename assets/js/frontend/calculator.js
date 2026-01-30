@@ -109,7 +109,12 @@
                 if (response.success) {
                     displayResults(response.data);
                     showSuccessMessage('Calculation complete!');
-                    $('#nss-save-btn, #nss-download-pdf-btn').show();
+                    // Show save/PDF buttons only if user can save
+                    if (nssData.can_save) {
+                        $('#nss-save-btn, #nss-download-pdf-btn').show();
+                    }
+                    // Show guest notice if not logged in
+                    $('#nss-guest-notice').show();
                 } else {
                     showError(response.data.message || 'Calculation error');
                 }

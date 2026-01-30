@@ -12,6 +12,8 @@ All notable changes to the Net Seller Sheet plugin will be documented in this fi
 - ZIP-to-county lookup fallback for addresses without county data
 - New database table `nss_zip_county` for Ohio ZIP-county mapping
 - Settings page options for Radar.io API key, enable/disable autocomplete, and Ohio restriction
+- Guest access to calculator (users can calculate without logging in)
+- Login/register prompt shown to guests after calculation (to save sheets/download PDFs)
 
 ### Fixed
 - Removed reference to non-existent `class-nss-pdf-template.php` that prevented plugin activation

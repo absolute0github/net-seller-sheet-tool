@@ -84,9 +84,11 @@ class NSS_Plugin {
         add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_assets']);
         add_action('admin_menu', [$this, 'register_admin_menus']);
 
-        // Address autocomplete AJAX handlers
+        // Address autocomplete AJAX handlers (allow guests)
         add_action('wp_ajax_nss_address_autocomplete', [$this, 'ajax_address_autocomplete']);
+        add_action('wp_ajax_nopriv_nss_address_autocomplete', [$this, 'ajax_address_autocomplete']);
         add_action('wp_ajax_nss_lookup_county', [$this, 'ajax_lookup_county']);
+        add_action('wp_ajax_nopriv_nss_lookup_county', [$this, 'ajax_lookup_county']);
 
         // Load text domain
         add_action('plugins_loaded', [$this, 'load_textdomain']);
@@ -242,6 +244,8 @@ class NSS_Plugin {
         wp_localize_script('nss-calculator', 'nssData', [
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('nss_frontend_nonce'),
+            'is_logged_in' => is_user_logged_in(),
+            'can_save' => is_user_logged_in() && current_user_can('create_nss_sheets'),
         ]);
 
         // Address autocomplete script (conditional)

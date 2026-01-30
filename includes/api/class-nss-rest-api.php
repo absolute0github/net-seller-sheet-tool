@@ -13,6 +13,7 @@ class NSS_REST_API {
 
         // Register AJAX endpoints
         add_action('wp_ajax_nss_calculate', [$this, 'ajax_calculate']);
+        add_action('wp_ajax_nopriv_nss_calculate', [$this, 'ajax_calculate']); // Allow guests to calculate
         add_action('wp_ajax_nss_save_sheet', [$this, 'ajax_save_sheet']);
         add_action('wp_ajax_nss_delete_sheet', [$this, 'ajax_delete_sheet']);
         add_action('wp_ajax_nss_download_pdf', [$this, 'ajax_download_pdf']);
@@ -239,12 +240,9 @@ class NSS_REST_API {
     // AJAX handlers
 
     public function ajax_calculate() {
-        check_ajax_referer('nss_frontend_nonce');
+        check_ajax_referer('nss_frontend_nonce', 'nonce');
 
-        if (!current_user_can('create_nss_sheets')) {
-            wp_send_json_error('Permission denied', 403);
-        }
-
+        // Allow guests to calculate (no capability check needed)
         $data = json_decode(stripslashes($_POST['sheet_data']), true);
         $calculator = new NSS_Calculator($data);
         $results = $calculator->calculate();

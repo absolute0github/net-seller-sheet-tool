@@ -3,9 +3,11 @@
  * Calculator form template
  */
 
+$is_logged_in = is_user_logged_in();
 $user_id = get_current_user_id();
-$user_meta = get_userdata($user_id);
-$company_name = get_user_meta($user_id, 'nss_company', true);
+$user_meta = $is_logged_in ? get_userdata($user_id) : null;
+$company_name = $is_logged_in ? get_user_meta($user_id, 'nss_company', true) : '';
+$can_save = $is_logged_in && current_user_can('create_nss_sheets');
 ?>
 
 <div class="nss-calculator-container">
@@ -90,10 +92,21 @@ $company_name = get_user_meta($user_id, 'nss_company', true);
         <div class="nss-form-actions">
             <button type="button" id="nss-calculate-btn" class="nss-button nss-button-primary">Calculate</button>
             <button type="reset" class="nss-button nss-button-secondary">Clear</button>
-            <button type="button" id="nss-save-btn" class="nss-button nss-button-secondary" style="display:none;">Save Sheet</button>
-            <button type="button" id="nss-download-pdf-btn" class="nss-button nss-button-secondary" style="display:none;">Download PDF</button>
+            <?php if ($can_save): ?>
+                <button type="button" id="nss-save-btn" class="nss-button nss-button-secondary" style="display:none;">Save Sheet</button>
+                <button type="button" id="nss-download-pdf-btn" class="nss-button nss-button-secondary" style="display:none;">Download PDF</button>
+            <?php endif; ?>
         </div>
     </form>
+
+    <?php if (!$is_logged_in): ?>
+    <div class="nss-guest-notice" id="nss-guest-notice" style="display:none;">
+        <p>Want to save your calculations and download PDFs?
+            <a href="<?php echo esc_url(wp_login_url(get_permalink())); ?>">Log in</a> or
+            <a href="<?php echo esc_url(wp_registration_url()); ?>">create an account</a>.
+        </p>
+    </div>
+    <?php endif; ?>
 
     <div id="nss-results" class="nss-results" style="display:none;">
         <h3>Net Proceeds Summary</h3>

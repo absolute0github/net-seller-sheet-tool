@@ -369,6 +369,26 @@
     font-style: italic;
 }
 
+/* Guest Notice */
+.nss-guest-notice {
+    background: #fff8e5;
+    border: 1px solid #f0c36d;
+    border-left: 4px solid #f0ad4e;
+    padding: 15px 20px;
+    margin: 20px 0;
+    border-radius: 4px;
+}
+
+.nss-guest-notice p {
+    margin: 0;
+    color: #8a6d3b;
+}
+
+.nss-guest-notice a {
+    color: #0073aa;
+    font-weight: 600;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .nss-calculator-container,

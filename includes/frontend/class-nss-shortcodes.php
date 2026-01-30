@@ -20,14 +20,7 @@ class NSS_Shortcodes {
      * @return string
      */
     public function calculator_shortcode($atts) {
-        if (!is_user_logged_in()) {
-            return '<p>Please log in to use the calculator.</p>';
-        }
-
-        if (!current_user_can('create_nss_sheets')) {
-            return '<p>You do not have permission to use this calculator.</p>';
-        }
-
+        // Allow guests to use the calculator (but not save)
         ob_start();
         include NSS_PLUGIN_DIR . 'includes/frontend/templates/calculator.php';
         return ob_get_clean();
