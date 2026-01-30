@@ -1,5 +1,5 @@
 # Dependencies
-/vendor/
+# /vendor/  # Committed for deployment
 
 # OS files
 .DS_Store
