@@ -1,11 +1,16 @@
 /**
  * Net Seller Sheet Frontend Calculator
  *
- * Handles form submission, validation, and AJAX communication
+ * Handles form submission, AJAX calculation, and the sheet preview.
  */
 
 (function($) {
     'use strict';
+
+    // Sheet ID stored after a save (so PDF download doesn't re-save)
+    var currentSheetId = null;
+    // Last successful results (for PDF re-download from preview)
+    var lastFormData = null;
 
     $(document).ready(function() {
         initCalculator();
@@ -13,274 +18,400 @@
         initSheetDetail();
     });
 
-    /**
-     * Initialize calculator form
-     */
-    function initCalculator() {
-        if (!$('#nss-calculator-form').length) {
-            return;
-        }
+    // ── Calculator form ────────────────────────────────────────────────────────
 
-        // Calculate button
+    function initCalculator() {
+        if (!$('#nss-calculator-form').length) return;
+
         $(document).on('click', '#nss-calculate-btn', function(e) {
             e.preventDefault();
 
-            const form = $('#nss-calculator-form');
-            const formData = form.serializeArray();
-            const data = {};
+            var form     = $('#nss-calculator-form');
+            var formData = {};
+            $.each(form.serializeArray(), function(i, f) { formData[f.name] = f.value; });
 
-            $.each(formData, function(i, field) {
-                data[field.name] = field.value;
-            });
-
-            // Validate required fields
-            if (!data.property_address || !data.property_county || !data.sales_price) {
-                showError('Please fill in all required fields');
+            if (!formData.property_address || !formData.property_county || !formData.sales_price) {
+                showError('Please fill in all required fields (Address, County, Sales Price).');
                 return;
             }
 
-            calculateNet(data);
+            lastFormData = formData;
+            currentSheetId = null; // reset so a new save happens if needed
+
+            calculateNet(formData);
         });
 
-        // Save sheet button
-        $(document).on('click', '#nss-save-btn', function(e) {
-            e.preventDefault();
-            saveSheet();
+        // Back / Edit buttons (delegated — rendered dynamically)
+        $(document).on('click', '#nss-back-btn, #nss-back-btn-bottom', function() {
+            showFormView();
         });
 
-        // Download PDF button
-        $(document).on('click', '#nss-download-pdf-btn', function(e) {
-            e.preventDefault();
-            downloadPDF();
+        // Download PDF button in preview
+        $(document).on('click', '#nss-preview-pdf-btn', function() {
+            downloadOrSaveAndDownload();
         });
     }
 
-    /**
-     * Initialize my sheets list
-     */
+    // ── My Sheets list ────────────────────────────────────────────────────────
+
     function initMySheets() {
         $(document).on('click', '.nss-delete-sheet', function(e) {
             e.preventDefault();
-
-            if (!confirm('Are you sure you want to delete this sheet?')) {
-                return;
-            }
-
-            const sheetId = $(this).data('sheet-id');
-            deleteSheet(sheetId);
-        });
-
-        $(document).on('click', '.nss-view-sheet', function(e) {
-            e.preventDefault();
-            const sheetId = $(this).data('sheet-id');
-            window.location.href = '#'; // Load sheet detail
+            if (!confirm('Are you sure you want to delete this sheet?')) return;
+            deleteSheet($(this).data('sheet-id'));
         });
     }
 
-    /**
-     * Initialize sheet detail view
-     */
+    // ── Sheet detail view ─────────────────────────────────────────────────────
+
     function initSheetDetail() {
         $(document).on('click', '.nss-download-pdf', function(e) {
             e.preventDefault();
-            const sheetId = $(this).data('sheet-id');
-            downloadPDF(sheetId);
+            downloadPDF($(this).data('sheet-id'));
         });
     }
 
-    /**
-     * Calculate net proceeds via AJAX
-     */
+    // ── AJAX: Calculate ───────────────────────────────────────────────────────
+
     function calculateNet(data) {
         showLoading();
         hideError();
 
         $.ajax({
-            url: nssData.ajax_url,
+            url:  nssData.ajax_url,
             type: 'POST',
             data: {
-                action: 'nss_calculate',
-                nonce: data.nonce,
-                sheet_data: JSON.stringify(data)
+                action:     'nss_calculate',
+                nonce:      data.nonce,
+                sheet_data: JSON.stringify(data),
             },
             success: function(response) {
                 hideLoading();
-
                 if (response.success) {
-                    displayResults(response.data);
-                    showSuccessMessage('Calculation complete!');
-                    // Show save button only if user can save
-                    // PDF button shows after saving
-                    if (nssData.can_save) {
-                        $('#nss-save-btn').show();
-                        $('#nss-download-pdf-btn').hide(); // Hidden until saved
-                    }
-                    // Show guest notice if not logged in
-                    $('#nss-guest-notice').show();
+                    showSheetPreview(data, response.data);
                 } else {
-                    showError(response.data.message || 'Calculation error');
+                    showError(response.data.message || 'Calculation error.');
                 }
             },
             error: function(xhr, status, error) {
                 hideLoading();
-                showError('Error: ' + error);
-            }
+                showError('Request failed: ' + error);
+            },
         });
     }
 
-    /**
-     * Display calculation results
-     */
-    function displayResults(results) {
-        const r = results;
+    // ── AJAX: Save sheet ──────────────────────────────────────────────────────
 
-        $('#result-sales-price').text(formatCurrency(r.net_proceeds.sales_price));
-
-        let deductionsHtml = '';
-        deductionsHtml += '<div class="result-item"><label>Loan Payoffs:</label><span>' + formatCurrency(r.loan_payoffs.total) + '</span></div>';
-        deductionsHtml += '<div class="result-item"><label>Conveyance:</label><span>' + formatCurrency(r.conveyance_fees.seller_amount) + '</span></div>';
-        deductionsHtml += '<div class="result-item"><label>Tax Proration:</label><span>' + formatCurrency(r.tax_proration.prorated_amount) + '</span></div>';
-        deductionsHtml += '<div class="result-item"><label>Commission:</label><span>' + formatCurrency(r.commission.amount) + '</span></div>';
-        deductionsHtml += '<div class="result-item"><label>Title Fees:</label><span>' + formatCurrency(r.title_fees.total) + '</span></div>';
-        deductionsHtml += '<div class="result-item"><label>Recording Fees:</label><span>' + formatCurrency(r.recording_fees.total) + '</span></div>';
-
-        $('#result-deductions').html(deductionsHtml);
-        $('#result-total-deductions').text(formatCurrency(r.total_deductions));
-        $('#result-net-proceeds').text(formatCurrency(r.net_proceeds.net_amount));
-
-        $('#nss-results').show();
-    }
-
-    // Store the current sheet ID after saving
-    var currentSheetId = null;
-
-    /**
-     * Save sheet to database
-     */
-    function saveSheet() {
-        const form = $('#nss-calculator-form');
-        const formData = form.serializeArray();
-        const data = {};
-
-        $.each(formData, function(i, field) {
-            data[field.name] = field.value;
-        });
+    function saveSheet(callback) {
+        if (currentSheetId) {
+            callback(currentSheetId);
+            return;
+        }
 
         $.ajax({
-            url: nssData.ajax_url,
+            url:  nssData.ajax_url,
             type: 'POST',
             data: {
-                action: 'nss_save_sheet',
-                nonce: nssData.nonce,
-                sheet_data: JSON.stringify(data)
+                action:     'nss_save_sheet',
+                nonce:      nssData.nonce,
+                sheet_data: JSON.stringify(lastFormData),
             },
             success: function(response) {
                 if (response.success) {
                     currentSheetId = response.data.id;
-                    alert('Sheet saved successfully!');
-                    // Enable PDF download now that we have a sheet ID
-                    $('#nss-download-pdf-btn').prop('disabled', false).show();
+                    callback(currentSheetId);
                 } else {
-                    showError(response.data.message || 'Error saving sheet');
+                    showError(response.data.message || 'Error saving sheet.');
                 }
             },
             error: function(xhr) {
-                var msg = 'Error saving sheet';
+                var msg = 'Error saving sheet.';
                 if (xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
                     msg = xhr.responseJSON.data.message;
                 }
                 showError(msg);
-            }
+            },
         });
     }
 
-    /**
-     * Download PDF
-     */
-    function downloadPDF(sheetId) {
-        var id = sheetId || currentSheetId;
-        if (!id) {
-            alert('Please save the sheet first before downloading PDF.');
-            return;
-        }
-        const pdfUrl = nssData.ajax_url + '?action=nss_download_pdf&sheet_id=' + id + '&nonce=' + nssData.nonce;
-        window.location.href = pdfUrl;
+    function downloadOrSaveAndDownload() {
+        var $btn = $('#nss-preview-pdf-btn');
+        $btn.prop('disabled', true).text('Saving\u2026');
+
+        saveSheet(function(id) {
+            $btn.prop('disabled', false).text('Download PDF');
+            downloadPDF(id);
+        });
     }
 
-    /**
-     * Delete sheet
-     */
+    // ── AJAX: Download PDF ────────────────────────────────────────────────────
+
+    function downloadPDF(sheetId) {
+        if (!sheetId) {
+            alert('Please save the sheet first before downloading the PDF.');
+            return;
+        }
+        window.open(
+            nssData.ajax_url + '?action=nss_download_pdf&sheet_id=' + sheetId + '&nonce=' + nssData.nonce,
+            '_blank'
+        );
+    }
+
+    // ── AJAX: Delete sheet ────────────────────────────────────────────────────
+
     function deleteSheet(sheetId) {
         $.ajax({
-            url: nssData.ajax_url,
+            url:  nssData.ajax_url,
             type: 'POST',
-            data: {
-                action: 'nss_delete_sheet',
-                sheet_id: sheetId,
-                nonce: nssData.nonce
-            },
+            data: { action: 'nss_delete_sheet', sheet_id: sheetId, nonce: nssData.nonce },
             success: function(response) {
                 if (response.success) {
                     location.reload();
                 } else {
-                    showError('Error deleting sheet');
+                    showError('Error deleting sheet.');
                 }
             },
-            error: function() {
-                showError('Error deleting sheet');
-            }
+            error: function() { showError('Error deleting sheet.'); },
         });
     }
 
-    /**
-     * Format number as currency
-     */
-    function formatCurrency(value) {
-        const num = parseFloat(value);
-        return '$' + num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    // ── View transitions ──────────────────────────────────────────────────────
+
+    function showFormView() {
+        $('#nss-sheet-preview').hide().empty();
+        $('#nss-form-view').show();
+        $('html, body').animate({ scrollTop: $('#nss-form-view').offset().top - 40 }, 300);
     }
 
-    /**
-     * Show loading message
-     */
+    // ── Sheet preview renderer ────────────────────────────────────────────────
+
+    function showSheetPreview(formData, r) {
+        var html = buildPreviewHtml(formData, r);
+        $('#nss-sheet-preview').html(html).show();
+        $('#nss-form-view').hide();
+        $('html, body').animate({ scrollTop: $('#nss-sheet-preview').offset().top - 40 }, 300);
+    }
+
+    function buildPreviewHtml(fd, r) {
+        var closingDate  = fd.closing_date ? formatDateMDY(fd.closing_date) : '\u2014';
+        var jan1Label    = fd.closing_date ? '01/01/' + fd.closing_date.substring(0, 4) : '';
+        var closeLabel   = fd.closing_date ? formatDateMDY(fd.closing_date) : '';
+
+        var addressLine = escHtml(fd.property_address || '');
+        var cityParts   = [];
+        if (fd.property_city)  cityParts.push(escHtml(fd.property_city));
+        if (fd.property_state) cityParts[cityParts.length - 1] += ', ' + escHtml(fd.property_state);
+        if (fd.property_zip)   cityParts.push(escHtml(fd.property_zip));
+        var cityLine    = cityParts.join(' ');
+        var countyText  = fd.property_county ? escHtml(fd.property_county) + ' County' : '';
+
+        // Commission rate label
+        var commRate = parseFloat(r.commission.rate) || 0;
+        var commLabel = commRate > 0
+            ? 'Real Estate Broker Fee <small style="color:#aac;">(' + commRate.toFixed(1) + '%)</small>'
+            : 'Real Estate Broker Fee';
+
+        // Proration date range label
+        var prorationDates = (jan1Label && closeLabel)
+            ? ' <small style="color:#aac;">' + jan1Label + ' &ndash; ' + closeLabel + '</small>'
+            : '';
+
+        // Payoff rows
+        var payoffRows = '';
+        var anyPayoff  = false;
+        var payoffs = [
+            { key: r.loan_payoffs.payoff_1, label: 'Mortgage #1' },
+            { key: r.loan_payoffs.payoff_2, label: 'Mortgage #2' },
+            { key: r.loan_payoffs.payoff_3, label: 'Mortgage #3' },
+        ];
+        $.each(payoffs, function(i, p) {
+            if (parseFloat(p.key) > 0) {
+                anyPayoff = true;
+                payoffRows += row(p.label, pAmt(p.key), '\u2014');
+            }
+        });
+        if (!anyPayoff) {
+            payoffRows = '<tr><td class="nss-pt-desc nss-pt-indent" style="color:#aaa;">Mortgage(s)</td>'
+                + '<td class="nss-pt-debit">\u2014</td><td class="nss-pt-credit">\u2014</td></tr>';
+        }
+
+        // Optional title-charge rows
+        var courierRow  = parseFloat(r.title_fees.courier_fee)       > 0 ? row('Courier Fee',          pAmt(r.title_fees.courier_fee),       '\u2014') : '';
+        var deedPrepRow = parseFloat(r.title_fees.deed_prep_fee)      > 0 ? row('Deed Preparation Fee', pAmt(r.title_fees.deed_prep_fee),      '\u2014') : '';
+        var wireRow     = parseFloat(r.title_fees.wire_transfer_fee)  > 0 ? row('Wire Transfer Fee',    pAmt(r.title_fees.wire_transfer_fee),  '\u2014') : '';
+
+        // HOA section (conditional)
+        var hoaSection = '';
+        if (parseFloat(fd.hoa_fees) > 0) {
+            hoaSection = sectionRow('HomeOwners Association')
+                + row('HOA Fees \u2014 ESTIMATE', pAmt(fd.hoa_fees), '\u2014');
+        }
+
+        // PDF / action buttons
+        var bottomAction = nssData.can_save
+            ? '<button type="button" class="nss-button nss-button-primary" id="nss-preview-pdf-btn">Download PDF</button>'
+            : '<span class="nss-preview-guest">'
+                + 'Want to download PDFs? <a href="' + nssData.login_url + '">Log in</a>'
+                + ' or <a href="' + nssData.register_url + '">create an account</a>.'
+                + '</span>';
+
+        return ''
+            // Top action bar
+            + '<div class="nss-preview-topbar">'
+            +   '<button type="button" class="nss-button nss-button-secondary" id="nss-back-btn">&#8592; Edit</button>'
+            + '</div>'
+
+            // ATG header
+            + '<div class="nss-preview-header-bar">'
+            +   '<div class="nss-preview-header-inner">'
+            +     '<div class="nss-preview-logo-cell">'
+            +       '<img src="' + nssData.plugin_url + 'assets/images/atg-logo.jpg" alt="ATG Logo">'
+            +     '</div>'
+            +     '<div class="nss-preview-title-cell">'
+            +       '<div class="nss-preview-title">Affiliates Title Group, LLC</div>'
+            +       '<div class="nss-preview-subtitle">Seller Net Sheet &mdash; Estimated Net Proceeds</div>'
+            +     '</div>'
+            +   '</div>'
+            + '</div>'
+            + '<div class="nss-preview-accent"></div>'
+
+            // Property info
+            + '<div class="nss-preview-property">'
+            +   '<span class="nss-preview-closing">Closing Date: <strong>' + closingDate + '</strong></span>'
+            +   '<span class="nss-preview-for">For:</span> <strong>' + addressLine + '</strong>'
+            +   (cityLine ? '&nbsp; ' + cityLine : '')
+            +   '<br><span class="nss-preview-for">&nbsp;</span>' + countyText
+            + '</div>'
+
+            // Debit / Credit table
+            + '<table class="nss-preview-table">'
+            +   '<thead><tr>'
+            +     '<th class="nss-pt-desc">Description</th>'
+            +     '<th>Debit</th>'
+            +     '<th>Credit</th>'
+            +   '</tr></thead>'
+            +   '<tbody>'
+
+            // Financial
+            + sectionRow('Financial')
+            + row('Sale Price of the Property',             '\u2014',                           pAmt(r.net_proceeds.sales_price, true))
+            + row('Seller\'s Owner\'s Title Policy (OTIRB)', pAmt(r.title_fees.owner_policy_fee), '\u2014')
+
+            // Prorations
+            + sectionRow('Prorations / Adjustments')
+            + '<tr><td class="nss-pt-desc nss-pt-indent">County Taxes' + prorationDates + '</td>'
+            +   '<td class="nss-pt-debit">' + pAmt(r.tax_proration.prorated_amount) + '</td>'
+            +   '<td class="nss-pt-credit">\u2014</td></tr>'
+            + row('Property Tax Hold (50% of Annual Taxes)', pAmt(r.tax_proration.tax_hold),    '\u2014')
+
+            // Title Charges
+            + sectionRow('Title Charges &amp; Escrow / Settlement Charges')
+            + row('Closing Fee', pAmt(r.title_fees.closing_fee), '\u2014')
+            + courierRow + deedPrepRow + wireRow
+
+            // Real Estate Charges
+            + sectionRow('Real Estate Charges')
+            + '<tr><td class="nss-pt-desc nss-pt-indent">' + commLabel + '</td>'
+            +   '<td class="nss-pt-debit">' + pAmt(r.commission.amount) + '</td>'
+            +   '<td class="nss-pt-credit">\u2014</td></tr>'
+
+            // Government Transfer
+            + sectionRow('Government Transfer Charges')
+            + row('Deed Transfer Tax / Conveyance Fee', pAmt(r.conveyance_fees.seller_amount), '\u2014')
+
+            // Payoffs
+            + sectionRow('Payoffs')
+            + payoffRows
+
+            // Recording Fees
+            + sectionRow('Recording Fees')
+            + row('Recording Fees', pAmt(r.recording_fees.total), '\u2014')
+
+            // HOA (conditional)
+            + hoaSection
+
+            // Subtotals
+            + '<tr class="nss-pt-subtotal">'
+            +   '<td class="nss-pt-desc">Subtotals</td>'
+            +   '<td style="text-align:right;">' + pAmt(r.total_deductions, true)           + '</td>'
+            +   '<td style="text-align:right;">' + pAmt(r.net_proceeds.sales_price, true)   + '</td>'
+            + '</tr>'
+
+            // Net Proceeds
+            + '<tr class="nss-pt-net">'
+            +   '<td class="nss-pt-desc">NET PROCEEDS TO SELLER</td>'
+            +   '<td>&nbsp;</td>'
+            +   '<td style="text-align:right;">' + pAmt(r.net_proceeds.net_amount, true)    + '</td>'
+            + '</tr>'
+
+            +   '</tbody>'
+            + '</table>'
+
+            // Disclaimer
+            + '<div class="nss-preview-disclaimer">'
+            + '* This estimate is an approximation and is not guaranteed. The estimate is based on information provided. '
+            + 'Additional charges may occur based on the details of the sale &mdash; mobile notary fees, seller credits, '
+            + 'recording fees, courier fees, etc. Final figures will be provided at closing.'
+            + '</div>'
+
+            // Bottom action bar
+            + '<div class="nss-preview-bottombar">'
+            +   '<button type="button" class="nss-button nss-button-secondary" id="nss-back-btn-bottom">&#8592; Edit</button>'
+            +   bottomAction
+            + '</div>';
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    /** Format a currency amount; returns an em-dash for zero/empty unless showZero */
+    function pAmt(value, showZero) {
+        var f = parseFloat(value) || 0;
+        if (f <= 0 && !showZero) return '\u2014';
+        return '$ ' + f.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    /** Build a standard indented data row */
+    function row(label, debit, credit) {
+        return '<tr>'
+            + '<td class="nss-pt-desc nss-pt-indent">' + label + '</td>'
+            + '<td class="nss-pt-debit">'  + debit  + '</td>'
+            + '<td class="nss-pt-credit">' + credit + '</td>'
+            + '</tr>';
+    }
+
+    /** Build a section header row */
+    function sectionRow(label) {
+        return '<tr class="nss-pt-section"><td colspan="3">' + label + '</td></tr>';
+    }
+
+    /** Convert YYYY-MM-DD to MM/DD/YYYY */
+    function formatDateMDY(dateStr) {
+        if (!dateStr) return '\u2014';
+        var parts = dateStr.split('-');
+        if (parts.length !== 3) return dateStr;
+        return parts[1] + '/' + parts[2] + '/' + parts[0];
+    }
+
+    /** Escape HTML special characters */
+    function escHtml(str) {
+        return $('<div>').text(String(str)).html();
+    }
+
     function showLoading() {
         $('#nss-loading').show();
-        $('#nss-results').hide();
     }
 
-    /**
-     * Hide loading message
-     */
     function hideLoading() {
         $('#nss-loading').hide();
     }
 
-    /**
-     * Show error message
-     */
     function showError(message) {
         $('#nss-error').text(message).show();
+        $('html, body').animate({ scrollTop: $('#nss-error').offset().top - 40 }, 200);
     }
 
-    /**
-     * Hide error message
-     */
     function hideError() {
         $('#nss-error').hide();
-    }
-
-    /**
-     * Show success message
-     */
-    function showSuccessMessage(message) {
-        // Create and show a temporary success message
-        const msg = $('<div class="nss-message success">' + message + '</div>');
-        $('body').prepend(msg);
-        setTimeout(function() {
-            msg.fadeOut(function() {
-                $(this).remove();
-            });
-        }, 3000);
     }
 
 })(jQuery);

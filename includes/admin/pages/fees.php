@@ -8,7 +8,7 @@ if (!current_user_can('manage_nss_fees')) {
 }
 
 $fee_type = sanitize_text_field($_GET['type'] ?? 'conveyance');
-$valid_types = ['conveyance', 'tax_rate', 'property_value', 'title_closing', 'title_exam', 'static_fee'];
+$valid_types = ['conveyance', 'property_value', 'title_closing', 'static_fee'];
 
 if (!in_array($fee_type, $valid_types)) {
     $fee_type = 'conveyance';
@@ -24,10 +24,8 @@ $fees = NSS_Fee::get_all($fee_type);
     <div class="nss-fee-tabs">
         <ul class="nav-tab-wrapper">
             <li><a href="<?php echo esc_url(admin_url('admin.php?page=nss-fees&type=conveyance')); ?>" class="nav-tab <?php echo $fee_type === 'conveyance' ? 'nav-tab-active' : ''; ?>">Conveyance Fees</a></li>
-            <li><a href="<?php echo esc_url(admin_url('admin.php?page=nss-fees&type=tax_rate')); ?>" class="nav-tab <?php echo $fee_type === 'tax_rate' ? 'nav-tab-active' : ''; ?>">Tax Rates</a></li>
-            <li><a href="<?php echo esc_url(admin_url('admin.php?page=nss-fees&type=property_value')); ?>" class="nav-tab <?php echo $fee_type === 'property_value' ? 'nav-tab-active' : ''; ?>">Property Value Tiers</a></li>
+            <li><a href="<?php echo esc_url(admin_url('admin.php?page=nss-fees&type=property_value')); ?>" class="nav-tab <?php echo $fee_type === 'property_value' ? 'nav-tab-active' : ''; ?>">Title Insurance Rates</a></li>
             <li><a href="<?php echo esc_url(admin_url('admin.php?page=nss-fees&type=title_closing')); ?>" class="nav-tab <?php echo $fee_type === 'title_closing' ? 'nav-tab-active' : ''; ?>">Title Closing Fees</a></li>
-            <li><a href="<?php echo esc_url(admin_url('admin.php?page=nss-fees&type=title_exam')); ?>" class="nav-tab <?php echo $fee_type === 'title_exam' ? 'nav-tab-active' : ''; ?>">Title Exam Fees</a></li>
             <li><a href="<?php echo esc_url(admin_url('admin.php?page=nss-fees&type=static_fee')); ?>" class="nav-tab <?php echo $fee_type === 'static_fee' ? 'nav-tab-active' : ''; ?>">Static Fees</a></li>
         </ul>
     </div>
@@ -53,14 +51,11 @@ $fees = NSS_Fee::get_all($fee_type);
                             <td>
                                 <?php if ($fee_type === 'conveyance'): ?>
                                     <strong><?php echo esc_html($fee->county_name); ?></strong><br>
-                                    <?php echo NSS_Formatting::percentage($fee->fee_percentage); ?> or <?php echo NSS_Formatting::currency($fee->flat_fee); ?>
-                                <?php elseif ($fee_type === 'tax_rate'): ?>
-                                    <strong><?php echo esc_html($fee->county_name); ?></strong><br>
-                                    <?php echo NSS_Formatting::percentage($fee->tax_rate); ?>
+                                    $<?php echo esc_html(number_format((float)$fee->fee_percentage, 2)); ?>/thousand
                                 <?php elseif ($fee_type === 'property_value'): ?>
                                     <strong><?php echo esc_html($fee->tier_name); ?></strong><br>
-                                    <?php echo NSS_Formatting::currency($fee->min_price); ?> - <?php echo NSS_Formatting::currency($fee->max_price); ?> @ <?php echo NSS_Formatting::percentage($fee->rate); ?>
-                                <?php elseif (in_array($fee_type, ['title_closing', 'title_exam'])): ?>
+                                    <?php echo NSS_Formatting::currency($fee->min_price); ?> &ndash; <?php echo NSS_Formatting::currency($fee->max_price); ?> @ $<?php echo esc_html(number_format((float)$fee->rate, 2)); ?>/k
+                                <?php elseif ($fee_type === 'title_closing'): ?>
                                     <strong><?php echo esc_html($fee->county_name); ?></strong><br>
                                     <?php echo NSS_Formatting::currency($fee->fee_amount); ?>
                                 <?php elseif ($fee_type === 'static_fee'): ?>
@@ -85,7 +80,7 @@ $fees = NSS_Fee::get_all($fee_type);
                 </tbody>
             </table>
         <?php else: ?>
-            <p>No <?php echo esc_html(strtolower($fee_type)); ?> fees configured yet.</p>
+            <p>No <?php echo esc_html(strtolower(str_replace('_', ' ', $fee_type))); ?> fees configured yet.</p>
         <?php endif; ?>
     </div>
 
@@ -108,37 +103,8 @@ $fees = NSS_Fee::get_all($fee_type);
                         <input type="text" name="state" id="state" class="small-text" maxlength="2" placeholder="OH">
                     </p>
                     <p>
-                        <label for="fee_percentage">Fee Percentage (%)</label>
-                        <input type="number" name="fee_percentage" id="fee_percentage" step="0.0001" min="0" class="small-text">
-                    </p>
-                    <p>
-                        <label for="flat_fee">Flat Fee ($)</label>
-                        <input type="number" name="flat_fee" id="flat_fee" step="0.01" min="0" class="small-text">
-                    </p>
-                    <p>
-                        <label for="seller_pays_percentage">Seller Pays Percentage (0-1)</label>
-                        <input type="number" name="seller_pays_percentage" id="seller_pays_percentage" step="0.01" min="0" max="1" value="1.0" class="small-text">
-                    </p>
-
-                <?php elseif ($fee_type === 'tax_rate'): ?>
-                    <p>
-                        <label for="county_name">County Name *</label>
-                        <input type="text" name="county_name" id="county_name" class="regular-text" required>
-                    </p>
-                    <p>
-                        <label for="state">State</label>
-                        <input type="text" name="state" id="state" class="small-text" maxlength="2" placeholder="OH">
-                    </p>
-                    <p>
-                        <label for="tax_rate">Tax Rate (%)</label>
-                        <input type="number" name="tax_rate" id="tax_rate" step="0.0001" min="0" class="small-text" required>
-                    </p>
-                    <p>
-                        <label for="tax_type">Tax Type</label>
-                        <select name="tax_type" id="tax_type">
-                            <option value="property_tax">Property Tax</option>
-                            <option value="sales_tax">Sales Tax</option>
-                        </select>
+                        <label for="fee_percentage">Rate ($ per $1,000)</label>
+                        <input type="number" name="fee_percentage" id="fee_percentage" step="0.01" min="0" class="small-text" placeholder="e.g. 3.00">
                     </p>
 
                 <?php elseif ($fee_type === 'property_value'): ?>
@@ -155,11 +121,11 @@ $fees = NSS_Fee::get_all($fee_type);
                         <input type="number" name="max_price" id="max_price" step="0.01" min="0" class="small-text" required>
                     </p>
                     <p>
-                        <label for="rate">Rate (%)</label>
-                        <input type="number" name="rate" id="rate" step="0.0001" min="0" class="small-text" required>
+                        <label for="rate">Rate ($ per $1,000)</label>
+                        <input type="number" name="rate" id="rate" step="0.01" min="0" class="small-text" required placeholder="e.g. 5.80">
                     </p>
 
-                <?php elseif (in_array($fee_type, ['title_closing', 'title_exam'])): ?>
+                <?php elseif ($fee_type === 'title_closing'): ?>
                     <p>
                         <label for="county_name">County Name *</label>
                         <input type="text" name="county_name" id="county_name" class="regular-text" required>

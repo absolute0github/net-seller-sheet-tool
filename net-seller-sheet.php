@@ -3,7 +3,7 @@
  * Plugin Name: Net Seller Sheet
  * Plugin URI: https://github.com/yourusername/net-seller-sheet
  * Description: Real estate net proceeds calculator with PDF generation
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Your Name
  * Author URI: https://example.com
  * License: GPL v2 or later
@@ -23,9 +23,9 @@ if (!defined('ABSPATH')) {
 define('NSS_PLUGIN_FILE', __FILE__);
 define('NSS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('NSS_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('NSS_PLUGIN_VERSION', '1.0.0');
+define('NSS_PLUGIN_VERSION', '1.1.0');
 define('NSS_PREFIX', 'nss');
-define('NSS_DB_VERSION', 2);
+define('NSS_DB_VERSION', 3);
 
 // Load Composer autoloader
 require_once NSS_PLUGIN_DIR . 'vendor/autoload.php';

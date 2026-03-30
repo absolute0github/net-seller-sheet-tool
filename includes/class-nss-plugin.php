@@ -242,10 +242,13 @@ class NSS_Plugin {
         );
 
         wp_localize_script('nss-calculator', 'nssData', [
-            'ajax_url' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('nss_frontend_nonce'),
+            'ajax_url'     => admin_url('admin-ajax.php'),
+            'nonce'        => wp_create_nonce('nss_frontend_nonce'),
             'is_logged_in' => is_user_logged_in(),
-            'can_save' => is_user_logged_in() && current_user_can('create_nss_sheets'),
+            'can_save'     => is_user_logged_in() && current_user_can('create_nss_sheets'),
+            'plugin_url'   => NSS_PLUGIN_URL,
+            'login_url'    => wp_login_url(get_permalink()),
+            'register_url' => wp_registration_url(),
         ]);
 
         // Address autocomplete script (conditional)

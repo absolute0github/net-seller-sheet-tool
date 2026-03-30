@@ -69,26 +69,24 @@ class NSS_Sheet {
 
         // Prepare data
         $insert_data = [
-            'user_id' => (int) $user_id,
-            'property_address' => sanitize_text_field($data['property_address'] ?? ''),
-            'property_city' => sanitize_text_field($data['property_city'] ?? ''),
-            'property_state' => sanitize_text_field($data['property_state'] ?? ''),
-            'property_county' => sanitize_text_field($data['property_county'] ?? ''),
-            'property_zip' => sanitize_text_field($data['property_zip'] ?? ''),
-            'sales_price' => floatval($data['sales_price'] ?? 0),
-            'loan_payoff_1' => floatval($data['loan_payoff_1'] ?? 0),
-            'loan_payoff_2' => floatval($data['loan_payoff_2'] ?? 0),
-            'loan_payoff_3' => floatval($data['loan_payoff_3'] ?? 0),
-            'wire_fee' => floatval($data['wire_fee'] ?? 0),
-            'closing_date' => sanitize_text_field($data['closing_date'] ?? date('Y-m-d')),
-            'hoa_fees' => floatval($data['hoa_fees'] ?? 0),
-            'owner_policy' => isset($data['owner_policy']) ? 1 : 0,
-            'tax_info' => json_encode($data['tax_info'] ?? []),
+            'user_id'              => (int) $user_id,
+            'property_address'     => sanitize_text_field($data['property_address'] ?? ''),
+            'property_city'        => sanitize_text_field($data['property_city'] ?? ''),
+            'property_state'       => sanitize_text_field($data['property_state'] ?? ''),
+            'property_county'      => sanitize_text_field($data['property_county'] ?? ''),
+            'property_zip'         => sanitize_text_field($data['property_zip'] ?? ''),
+            'sales_price'          => floatval($data['sales_price'] ?? 0),
+            'loan_payoff_1'        => floatval($data['loan_payoff_1'] ?? 0),
+            'loan_payoff_2'        => floatval($data['loan_payoff_2'] ?? 0),
+            'loan_payoff_3'        => floatval($data['loan_payoff_3'] ?? 0),
+            'closing_date'         => sanitize_text_field($data['closing_date'] ?? date('Y-m-d')),
+            'hoa_fees'             => floatval($data['hoa_fees'] ?? 0),
+            'tax_info'             => json_encode($data['tax_info'] ?? []),
             'commission_structure' => json_encode($data['commission_structure'] ?? []),
-            'additional_fees' => json_encode($data['additional_fees'] ?? []),
+            'additional_fees'      => json_encode($data['additional_fees'] ?? []),
         ];
 
-        $formats = ['%d', '%s', '%s', '%s', '%s', '%s', '%f', '%f', '%f', '%f', '%f', '%s', '%f', '%d', '%s', '%s', '%s'];
+        $formats = ['%d', '%s', '%s', '%s', '%s', '%s', '%f', '%f', '%f', '%f', '%s', '%f', '%s', '%s', '%s'];
 
         $inserted = $wpdb->insert(
             $wpdb->prefix . 'nss_sheets',
@@ -113,25 +111,23 @@ class NSS_Sheet {
         global $wpdb;
 
         $update_data = [
-            'property_address' => sanitize_text_field($data['property_address'] ?? $this->data['property_address']),
-            'property_city' => sanitize_text_field($data['property_city'] ?? $this->data['property_city']),
-            'property_state' => sanitize_text_field($data['property_state'] ?? $this->data['property_state']),
-            'property_county' => sanitize_text_field($data['property_county'] ?? $this->data['property_county']),
-            'property_zip' => sanitize_text_field($data['property_zip'] ?? $this->data['property_zip']),
-            'sales_price' => floatval($data['sales_price'] ?? $this->data['sales_price']),
-            'loan_payoff_1' => floatval($data['loan_payoff_1'] ?? $this->data['loan_payoff_1']),
-            'loan_payoff_2' => floatval($data['loan_payoff_2'] ?? $this->data['loan_payoff_2']),
-            'loan_payoff_3' => floatval($data['loan_payoff_3'] ?? $this->data['loan_payoff_3']),
-            'wire_fee' => floatval($data['wire_fee'] ?? $this->data['wire_fee']),
-            'closing_date' => sanitize_text_field($data['closing_date'] ?? $this->data['closing_date']),
-            'hoa_fees' => floatval($data['hoa_fees'] ?? $this->data['hoa_fees']),
-            'owner_policy' => isset($data['owner_policy']) ? 1 : 0,
-            'tax_info' => json_encode($data['tax_info'] ?? $this->data['tax_info']),
+            'property_address'     => sanitize_text_field($data['property_address'] ?? $this->data['property_address']),
+            'property_city'        => sanitize_text_field($data['property_city'] ?? $this->data['property_city']),
+            'property_state'       => sanitize_text_field($data['property_state'] ?? $this->data['property_state']),
+            'property_county'      => sanitize_text_field($data['property_county'] ?? $this->data['property_county']),
+            'property_zip'         => sanitize_text_field($data['property_zip'] ?? $this->data['property_zip']),
+            'sales_price'          => floatval($data['sales_price'] ?? $this->data['sales_price']),
+            'loan_payoff_1'        => floatval($data['loan_payoff_1'] ?? $this->data['loan_payoff_1']),
+            'loan_payoff_2'        => floatval($data['loan_payoff_2'] ?? $this->data['loan_payoff_2']),
+            'loan_payoff_3'        => floatval($data['loan_payoff_3'] ?? $this->data['loan_payoff_3']),
+            'closing_date'         => sanitize_text_field($data['closing_date'] ?? $this->data['closing_date']),
+            'hoa_fees'             => floatval($data['hoa_fees'] ?? $this->data['hoa_fees']),
+            'tax_info'             => json_encode($data['tax_info'] ?? $this->data['tax_info']),
             'commission_structure' => json_encode($data['commission_structure'] ?? $this->data['commission_structure']),
-            'additional_fees' => json_encode($data['additional_fees'] ?? $this->data['additional_fees']),
+            'additional_fees'      => json_encode($data['additional_fees'] ?? $this->data['additional_fees']),
         ];
 
-        $formats = ['%s', '%s', '%s', '%s', '%s', '%f', '%f', '%f', '%f', '%f', '%s', '%f', '%d', '%s', '%s', '%s'];
+        $formats = ['%s', '%s', '%s', '%s', '%s', '%f', '%f', '%f', '%f', '%s', '%f', '%s', '%s', '%s'];
 
         $updated = $wpdb->update(
             $wpdb->prefix . 'nss_sheets',

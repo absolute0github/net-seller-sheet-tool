@@ -15,6 +15,7 @@ class NSS_Database {
         if ($current_version !== NSS_DB_VERSION) {
             self::create_tables();
             update_option('nss_db_version', NSS_DB_VERSION);
+            self::seed_ohio_title_insurance_rates();
         }
     }
 
@@ -41,13 +42,11 @@ class NSS_Database {
             loan_payoff_1 DECIMAL(18,2),
             loan_payoff_2 DECIMAL(18,2),
             loan_payoff_3 DECIMAL(18,2),
-            wire_fee DECIMAL(18,2),
             closing_date DATE,
             tax_info JSON,
             commission_structure JSON,
             hoa_fees DECIMAL(18,2),
             additional_fees JSON,
-            owner_policy TINYINT(1) DEFAULT 0,
             net_proceeds DECIMAL(18,2),
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -72,21 +71,7 @@ class NSS_Database {
             KEY is_active (is_active)
         ) $charset_collate;";
 
-        // 3. Tax rates table
-        $sql[] = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}nss_tax_rates (
-            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-            county_name VARCHAR(100) NOT NULL,
-            state VARCHAR(2),
-            tax_rate DECIMAL(8,4) NOT NULL,
-            tax_type ENUM('property_tax', 'sales_tax') DEFAULT 'property_tax',
-            is_active TINYINT(1) DEFAULT 1,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            KEY county_name (county_name),
-            KEY is_active (is_active)
-        ) $charset_collate;";
-
-        // 4. Property value rates (tiered pricing)
+        // 3. Property value rates (title insurance tiers)
         $sql[] = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}nss_property_value_rates (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             tier_name VARCHAR(100) NOT NULL,
@@ -100,7 +85,7 @@ class NSS_Database {
             KEY is_active (is_active)
         ) $charset_collate;";
 
-        // 5. Title closing fees table
+        // 4. Title closing fees table
         $sql[] = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}nss_title_closing_fees (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             county_name VARCHAR(100) NOT NULL,
@@ -113,20 +98,7 @@ class NSS_Database {
             KEY is_active (is_active)
         ) $charset_collate;";
 
-        // 6. Title exam fees table
-        $sql[] = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}nss_title_exam_fees (
-            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-            county_name VARCHAR(100) NOT NULL,
-            state VARCHAR(2),
-            fee_amount DECIMAL(18,2) NOT NULL,
-            is_active TINYINT(1) DEFAULT 1,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            KEY county_name (county_name),
-            KEY is_active (is_active)
-        ) $charset_collate;";
-
-        // 7. Static title fees table (courier, deed prep, wire)
+        // 5. Static title fees table (courier, deed prep, wire)
         $sql[] = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}nss_static_title_fees (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             fee_type ENUM('courier', 'deed_prep', 'wire_transfer') NOT NULL UNIQUE,
@@ -137,7 +109,7 @@ class NSS_Database {
             KEY is_active (is_active)
         ) $charset_collate;";
 
-        // 8. ZIP to County mapping table (for Ohio)
+        // 6. ZIP to County mapping table (for Ohio)
         $sql[] = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}nss_zip_county (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             zip_code VARCHAR(5) NOT NULL,
@@ -156,6 +128,43 @@ class NSS_Database {
     }
 
     /**
+     * Seed Ohio OTIRB Standard Owner's Policy title insurance rates (effective Jan 1, 2026)
+     *
+     * The rate column stores dollars per $1,000 of coverage (e.g., 5.80 = $5.80/k).
+     * Truncates existing tiers first so old commission % tiers are replaced.
+     */
+    public static function seed_ohio_title_insurance_rates() {
+        global $wpdb;
+        $table = $wpdb->prefix . 'nss_property_value_rates';
+
+        $wpdb->query("TRUNCATE TABLE {$table}");
+
+        $ohio_tiers = [
+            ['tier_name' => 'Up to $250,000',         'min_price' => 0.00,        'max_price' => 250000.00,    'rate' => 5.80],
+            ['tier_name' => '$250,001-$500,000',       'min_price' => 250000.00,   'max_price' => 500000.00,    'rate' => 4.10],
+            ['tier_name' => '$500,001-$1,000,000',     'min_price' => 500000.00,   'max_price' => 1000000.00,   'rate' => 3.20],
+            ['tier_name' => '$1,000,001-$5,000,000',   'min_price' => 1000000.00,  'max_price' => 5000000.00,   'rate' => 3.10],
+            ['tier_name' => '$5,000,001-$10,000,000',  'min_price' => 5000000.00,  'max_price' => 10000000.00,  'rate' => 2.90],
+            ['tier_name' => 'Over $10,000,000',        'min_price' => 10000000.00, 'max_price' => 999999999.99, 'rate' => 2.60],
+        ];
+
+        foreach ($ohio_tiers as $tier) {
+            $wpdb->insert(
+                $table,
+                [
+                    'tier_name'  => $tier['tier_name'],
+                    'min_price'  => $tier['min_price'],
+                    'max_price'  => $tier['max_price'],
+                    'rate'       => $tier['rate'],
+                    'is_active'  => 1,
+                    'created_at' => current_time('mysql'),
+                ],
+                ['%s', '%f', '%f', '%f', '%d', '%s']
+            );
+        }
+    }
+
+    /**
      * Delete all custom tables (for uninstall)
      */
     public static function drop_tables() {
@@ -164,10 +173,8 @@ class NSS_Database {
         $tables = [
             'nss_sheets',
             'nss_conveyance_fees',
-            'nss_tax_rates',
             'nss_property_value_rates',
             'nss_title_closing_fees',
-            'nss_title_exam_fees',
             'nss_static_title_fees',
             'nss_zip_county',
         ];

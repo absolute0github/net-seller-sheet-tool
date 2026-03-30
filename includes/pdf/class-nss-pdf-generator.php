@@ -46,7 +46,7 @@ class NSS_PDF_Generator {
 
             $filename = 'net-proceeds-' . $this->sheet_data['id'] . '.pdf';
             header('Content-Type: application/pdf');
-            header('Content-Disposition: attachment; filename="' . esc_attr($filename) . '"');
+            header('Content-Disposition: inline; filename="' . esc_attr($filename) . '"');
 
             echo $this->mpdf->output();
             exit;
@@ -60,12 +60,12 @@ class NSS_PDF_Generator {
      */
     private function initialize_mpdf() {
         $this->mpdf = new Mpdf([
-            'mode' => 'utf-8',
-            'format' => 'A4',
-            'margin_left' => 15,
-            'margin_right' => 15,
-            'margin_top' => 20,
-            'margin_bottom' => 20,
+            'mode'          => 'utf-8',
+            'format'        => 'A4',
+            'margin_left'   => 10,
+            'margin_right'  => 10,
+            'margin_top'    => 10,
+            'margin_bottom' => 10,
         ]);
 
         // Set document properties

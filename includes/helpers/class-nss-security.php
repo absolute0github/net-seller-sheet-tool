@@ -92,19 +92,23 @@ class NSS_Security {
      */
     public static function sanitize_sheet_data($data) {
         return [
-            'property_address' => sanitize_text_field($data['property_address'] ?? ''),
-            'property_city' => sanitize_text_field($data['property_city'] ?? ''),
-            'property_state' => sanitize_text_field($data['property_state'] ?? ''),
-            'property_county' => sanitize_text_field($data['property_county'] ?? ''),
-            'property_zip' => sanitize_text_field($data['property_zip'] ?? ''),
-            'sales_price' => floatval($data['sales_price'] ?? 0),
-            'loan_payoff_1' => floatval($data['loan_payoff_1'] ?? 0),
-            'loan_payoff_2' => floatval($data['loan_payoff_2'] ?? 0),
-            'loan_payoff_3' => floatval($data['loan_payoff_3'] ?? 0),
-            'wire_fee' => floatval($data['wire_fee'] ?? 0),
-            'closing_date' => sanitize_text_field($data['closing_date'] ?? date('Y-m-d')),
-            'hoa_fees' => floatval($data['hoa_fees'] ?? 0),
-            'owner_policy' => isset($data['owner_policy']) ? 1 : 0,
+            'property_address'     => sanitize_text_field($data['property_address'] ?? ''),
+            'property_city'        => sanitize_text_field($data['property_city'] ?? ''),
+            'property_state'       => sanitize_text_field($data['property_state'] ?? ''),
+            'property_county'      => sanitize_text_field($data['property_county'] ?? ''),
+            'property_zip'         => sanitize_text_field($data['property_zip'] ?? ''),
+            'sales_price'          => floatval($data['sales_price'] ?? 0),
+            'loan_payoff_1'        => floatval($data['loan_payoff_1'] ?? 0),
+            'loan_payoff_2'        => floatval($data['loan_payoff_2'] ?? 0),
+            'loan_payoff_3'        => floatval($data['loan_payoff_3'] ?? 0),
+            'closing_date'         => sanitize_text_field($data['closing_date'] ?? date('Y-m-d')),
+            'hoa_fees'             => floatval($data['hoa_fees'] ?? 0),
+            'tax_info'             => [
+                'annual_taxes' => floatval($data['annual_taxes'] ?? 0),
+            ],
+            'commission_structure' => [
+                'agent_commission_percentage' => floatval($data['agent_commission_percentage'] ?? 0),
+            ],
         ];
     }
 

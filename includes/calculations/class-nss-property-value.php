@@ -1,8 +1,10 @@
 <?php
 /**
- * Property value tier calculator
+ * Title insurance calculator
  *
- * Handles tiered pricing structure based on property value
+ * Calculates Ohio OTIRB Standard Owner's Policy premium using a cumulative
+ * tiered rate structure. The rate column in nss_property_value_rates stores
+ * dollars per $1,000 of coverage (e.g., 5.80 = $5.80 per $1,000).
  */
 class NSS_Property_Value {
 
@@ -13,59 +15,76 @@ class NSS_Property_Value {
     }
 
     /**
-     * Get applicable tier for sales price
+     * Calculate Ohio OTIRB title insurance premium (cumulative tiered)
      *
-     * @return object|null
-     */
-    public function get_tier() {
-        global $wpdb;
-
-        $tier = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}nss_property_value_rates
-            WHERE min_price <= %f AND max_price > %f AND is_active = 1
-            LIMIT 1",
-            $this->sales_price,
-            $this->sales_price
-        ));
-
-        return $tier;
-    }
-
-    /**
-     * Calculate commission based on tiered rate
+     * Coverage is rounded up to the nearest $1,000.
+     * Each tier's rate applies only to the portion of coverage within that tier.
+     * Minimum premium is $225.
      *
+     * @param float|string $sales_price
      * @return array {
-     *     'tier_name': string,
-     *     'rate': float,
-     *     'amount': string
+     *     'premium':   string,
+     *     'breakdown': array
      * }
      */
-    public function calculate_commission() {
-        $tier = $this->get_tier();
+    public function calculate_title_insurance($sales_price) {
+        $tiers = self::get_all_tiers();
 
-        if (!$tier) {
-            return [
-                'tier_name' => 'Unknown',
-                'rate' => 0,
-                'amount' => '0.00',
-            ];
+        if (empty($tiers)) {
+            return ['premium' => '225.00', 'breakdown' => []];
         }
 
-        // rate is stored as whole number (e.g., 3 = 3%)
-        $commission = NSS_Precision_Math::percentage(
-            $this->sales_price,
-            $tier->rate
-        );
+        // Round coverage up to nearest $1,000
+        $coverage  = (float) ceil(floatval($sales_price) / 1000) * 1000;
+        $remaining = $coverage;
+
+        $total_premium = '0.00';
+        $breakdown     = [];
+
+        foreach ($tiers as $tier) {
+            if ($remaining <= 0) {
+                break;
+            }
+
+            $tier_min = floatval($tier->min_price);
+            $tier_max = floatval($tier->max_price);
+            $rate     = floatval($tier->rate);
+
+            $tier_capacity = $tier_max - $tier_min;
+            $tier_coverage = min($remaining, $tier_capacity);
+
+            if ($tier_coverage <= 0) {
+                continue;
+            }
+
+            $thousands    = NSS_Precision_Math::divide($tier_coverage, 1000);
+            $tier_premium = NSS_Precision_Math::multiply($thousands, $rate);
+
+            $total_premium = NSS_Precision_Math::add($total_premium, $tier_premium);
+
+            $breakdown[] = [
+                'tier_name' => $tier->tier_name,
+                'coverage'  => $tier_coverage,
+                'rate'      => $rate,
+                'premium'   => $tier_premium,
+            ];
+
+            $remaining -= $tier_coverage;
+        }
+
+        // Apply $225 minimum premium
+        if (floatval($total_premium) < 225.00) {
+            $total_premium = '225.00';
+        }
 
         return [
-            'tier_name' => $tier->tier_name,
-            'rate' => (float) $tier->rate,
-            'amount' => $commission,
+            'premium'   => $total_premium,
+            'breakdown' => $breakdown,
         ];
     }
 
     /**
-     * Get all tiers
+     * Get all active tiers ordered by min_price ASC
      *
      * @return array
      */
@@ -94,11 +113,11 @@ class NSS_Property_Value {
         $updated = $wpdb->update(
             $wpdb->prefix . 'nss_property_value_rates',
             [
-                'tier_name' => sanitize_text_field($data['tier_name']),
-                'min_price' => floatval($data['min_price']),
-                'max_price' => floatval($data['max_price']),
-                'rate' => floatval($data['rate']),
-                'is_active' => isset($data['is_active']) ? 1 : 0,
+                'tier_name'  => sanitize_text_field($data['tier_name']),
+                'min_price'  => floatval($data['min_price']),
+                'max_price'  => floatval($data['max_price']),
+                'rate'       => floatval($data['rate']),
+                'is_active'  => isset($data['is_active']) ? 1 : 0,
                 'updated_at' => current_time('mysql'),
             ],
             ['id' => (int) $tier_id],
@@ -121,11 +140,11 @@ class NSS_Property_Value {
         $inserted = $wpdb->insert(
             $wpdb->prefix . 'nss_property_value_rates',
             [
-                'tier_name' => sanitize_text_field($data['tier_name']),
-                'min_price' => floatval($data['min_price']),
-                'max_price' => floatval($data['max_price']),
-                'rate' => floatval($data['rate']),
-                'is_active' => isset($data['is_active']) ? 1 : 0,
+                'tier_name'  => sanitize_text_field($data['tier_name']),
+                'min_price'  => floatval($data['min_price']),
+                'max_price'  => floatval($data['max_price']),
+                'rate'       => floatval($data['rate']),
+                'is_active'  => isset($data['is_active']) ? 1 : 0,
                 'created_at' => current_time('mysql'),
             ],
             ['%s', '%f', '%f', '%f', '%d', '%s']
