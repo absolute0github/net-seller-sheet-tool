@@ -116,3 +116,17 @@ Assets are conditionally enqueued:
 - When adding new features, update this file if architecture changes
 - Commit after completing each feature or fix
 - Push to GitHub after commits are ready
+
+## Deployment
+
+**Push to `main` → auto-deploys to production.** A GitHub Actions workflow (`.github/workflows/deploy.yml`) SSH's into the production server on every push to `main` and runs:
+
+```bash
+cd ~/www/atgtitleservices.com/public_html/wp-content/plugins/net-seller-sheet-tool
+git pull origin main
+composer install --no-dev --optimize-autoloader
+```
+
+**Production server:** `atgtitleservices.com`
+
+**SSH key:** The `SSH_PRIVATE_KEY` GitHub Actions secret must match a key in the server's `~/.ssh/authorized_keys`. The ed25519 keypair from `luckystonessd` (`~/.ssh/id_ed25519`) is authorized. If the deploy action fails with an SSH auth error, update the `SSH_PRIVATE_KEY` secret in GitHub → Settings → Secrets and variables → Actions with the private key from `luckystonessd`.
