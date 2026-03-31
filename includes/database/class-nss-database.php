@@ -27,8 +27,8 @@ class NSS_Database {
         global $wpdb;
         $table = $wpdb->prefix . 'nss_sheets';
 
-        // v4: widen property_state from VARCHAR(2) to VARCHAR(100)
-        if (version_compare((string) $from_version, '4', '<')) {
+        // v5: widen property_state from VARCHAR(2) to VARCHAR(100)
+        if (version_compare((string) $from_version, '5', '<')) {
             $wpdb->query("ALTER TABLE `{$table}` MODIFY COLUMN `property_state` VARCHAR(100)");
         }
     }
