@@ -14,8 +14,22 @@ class NSS_Database {
 
         if ($current_version !== NSS_DB_VERSION) {
             self::create_tables();
+            self::run_migrations($current_version);
             update_option('nss_db_version', NSS_DB_VERSION);
             self::seed_ohio_title_insurance_rates();
+        }
+    }
+
+    /**
+     * Run version-specific migrations that dbDelta can't handle
+     */
+    public static function run_migrations($from_version) {
+        global $wpdb;
+        $table = $wpdb->prefix . 'nss_sheets';
+
+        // v4: widen property_state from VARCHAR(2) to VARCHAR(100)
+        if (version_compare((string) $from_version, '4', '<')) {
+            $wpdb->query("ALTER TABLE `{$table}` MODIFY COLUMN `property_state` VARCHAR(100)");
         }
     }
 
