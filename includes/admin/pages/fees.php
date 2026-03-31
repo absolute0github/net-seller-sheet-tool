@@ -139,13 +139,23 @@ $fees = NSS_Fee::get_all($fee_type);
                         <input type="number" name="fee_amount" id="fee_amount" step="0.01" min="0" class="small-text" required>
                     </p>
 
-                <?php elseif ($fee_type === 'static_fee'): ?>
+                <?php elseif ($fee_type === 'static_fee'):
+                    global $wpdb;
+                    $known_types = ['courier', 'deed_prep', 'wire_transfer'];
+                    $existing_types = $wpdb->get_col(
+                        "SELECT DISTINCT fee_type FROM {$wpdb->prefix}nss_static_title_fees ORDER BY fee_type"
+                    );
+                    $custom_types = array_diff($existing_types ?: [], $known_types);
+                ?>
                     <p>
                         <label for="static_fee_type">Fee Type *</label>
                         <select name="static_fee_type" id="static_fee_type" required>
                             <option value="courier">Courier</option>
                             <option value="deed_prep">Deed Prep</option>
                             <option value="wire_transfer">Wire Transfer</option>
+                            <?php foreach ($custom_types as $ct): ?>
+                                <option value="<?php echo esc_attr($ct); ?>"><?php echo esc_html(ucwords(str_replace('_', ' ', $ct))); ?></option>
+                            <?php endforeach; ?>
                             <option value="other">Other&hellip;</option>
                         </select>
                     </p>

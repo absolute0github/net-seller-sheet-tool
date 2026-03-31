@@ -165,13 +165,14 @@
                 // Title closing/exam and static fee fields
                 if (feeData.fee_amount !== undefined) $('#fee_amount').val(feeData.fee_amount);
                 if (feeData.fee_type) {
-                    var knownTypes = ['courier', 'deed_prep', 'wire_transfer'];
-                    if (knownTypes.indexOf(feeData.fee_type) !== -1) {
-                        $('#static_fee_type').val(feeData.fee_type);
+                    // Check if the fee_type exists as an option in the dropdown (includes dynamic custom types)
+                    var $select = $('#static_fee_type');
+                    if ($select.find('option[value="' + feeData.fee_type + '"]').length) {
+                        $select.val(feeData.fee_type);
                         $('#custom_fee_type_row').hide();
                         $('#custom_fee_type').prop('required', false);
                     } else {
-                        $('#static_fee_type').val('other');
+                        $select.val('other');
                         $('#custom_fee_type').val(feeData.fee_type);
                         $('#custom_fee_type_row').show();
                         $('#custom_fee_type').prop('required', true);
