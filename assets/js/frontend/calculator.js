@@ -239,6 +239,13 @@
         var courierRow  = parseFloat(r.title_fees.courier_fee)       > 0 ? row('Courier Fee',          pAmt(r.title_fees.courier_fee),       '\u2014') : '';
         var deedPrepRow = parseFloat(r.title_fees.deed_prep_fee)      > 0 ? row('Deed Preparation Fee', pAmt(r.title_fees.deed_prep_fee),      '\u2014') : '';
         var wireRow     = parseFloat(r.title_fees.wire_transfer_fee)  > 0 ? row('Wire Transfer Fee',    pAmt(r.title_fees.wire_transfer_fee),  '\u2014') : '';
+        var customFeeRows = '';
+        if (r.title_fees.custom_fees && r.title_fees.custom_fees.length) {
+            $.each(r.title_fees.custom_fees, function(i, f) {
+                var label = f.label.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+                customFeeRows += row(label, pAmt(f.amount), '\u2014');
+            });
+        }
 
         // HOA section (conditional)
         var hoaSection = '';
@@ -307,7 +314,7 @@
             // Title Charges
             + sectionRow('Title Charges &amp; Escrow / Settlement Charges')
             + row('Closing Fee', pAmt(r.title_fees.closing_fee), '\u2014')
-            + courierRow + deedPrepRow + wireRow
+            + courierRow + deedPrepRow + wireRow + customFeeRows
 
             // Real Estate Charges
             + sectionRow('Real Estate Charges')

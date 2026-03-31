@@ -274,6 +274,13 @@ body {
             <td class="col-credit">&mdash;</td>
         </tr>
         <?php endif; ?>
+        <?php foreach ($results['title_fees']['custom_fees'] ?? [] as $cf): ?>
+        <tr>
+            <td class="col-desc indented"><?php echo esc_html(ucwords(str_replace('_', ' ', $cf['label']))); ?></td>
+            <td class="col-debit"><?php echo nss_pdf_amount($cf['amount']); ?></td>
+            <td class="col-credit">&mdash;</td>
+        </tr>
+        <?php endforeach; ?>
 
         <!-- REAL ESTATE CHARGES -->
         <tr class="section-header"><td colspan="3">Real Estate Charges</td></tr>

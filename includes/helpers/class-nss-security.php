@@ -159,11 +159,16 @@ class NSS_Security {
                 ];
 
             case 'static_fee':
-                $static_type = $data['static_fee_type'] ?? $data['fee_type'] ?? '';
+                $raw_type = $data['static_fee_type'] ?? $data['fee_type'] ?? '';
+                if ($raw_type === 'other') {
+                    $static_type = sanitize_text_field($data['custom_fee_type'] ?? '');
+                } else {
+                    $static_type = sanitize_text_field($raw_type);
+                }
                 return [
-                    'fee_type' => in_array($static_type, ['courier', 'deed_prep', 'wire_transfer']) ? $static_type : '',
+                    'fee_type'   => $static_type,
                     'fee_amount' => floatval($data['fee_amount'] ?? 0),
-                    'is_active' => isset($data['is_active']) ? 1 : 0,
+                    'is_active'  => isset($data['is_active']) ? 1 : 0,
                 ];
 
             default:

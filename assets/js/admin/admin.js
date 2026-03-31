@@ -52,6 +52,17 @@
         const $modal = $('#nss-fee-modal');
         const $form = $('#nss-fee-form');
 
+        // Toggle custom fee name input when "Other..." is selected
+        $(document).on('change', '#static_fee_type', function() {
+            if ($(this).val() === 'other') {
+                $('#custom_fee_type_row').show();
+                $('#custom_fee_type').prop('required', true);
+            } else {
+                $('#custom_fee_type_row').hide();
+                $('#custom_fee_type').prop('required', false).val('');
+            }
+        });
+
         // Open modal for adding new fee
         $(document).on('click', '#nss-add-fee-btn', function(e) {
             e.preventDefault();
@@ -62,6 +73,9 @@
             $('#is_active').prop('checked', true);
             // Reset seller_pays_percentage to default
             $('#seller_pays_percentage').val('1.0');
+            // Hide custom fee type row
+            $('#custom_fee_type_row').hide();
+            $('#custom_fee_type').prop('required', false);
             $modal.show();
         });
 
@@ -150,7 +164,19 @@
 
                 // Title closing/exam and static fee fields
                 if (feeData.fee_amount !== undefined) $('#fee_amount').val(feeData.fee_amount);
-                if (feeData.fee_type) $('#static_fee_type').val(feeData.fee_type);
+                if (feeData.fee_type) {
+                    var knownTypes = ['courier', 'deed_prep', 'wire_transfer'];
+                    if (knownTypes.indexOf(feeData.fee_type) !== -1) {
+                        $('#static_fee_type').val(feeData.fee_type);
+                        $('#custom_fee_type_row').hide();
+                        $('#custom_fee_type').prop('required', false);
+                    } else {
+                        $('#static_fee_type').val('other');
+                        $('#custom_fee_type').val(feeData.fee_type);
+                        $('#custom_fee_type_row').show();
+                        $('#custom_fee_type').prop('required', true);
+                    }
+                }
 
                 // Active status
                 $('#is_active').prop('checked', feeData.is_active == 1);

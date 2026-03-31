@@ -146,7 +146,12 @@ $fees = NSS_Fee::get_all($fee_type);
                             <option value="courier">Courier</option>
                             <option value="deed_prep">Deed Prep</option>
                             <option value="wire_transfer">Wire Transfer</option>
+                            <option value="other">Other&hellip;</option>
                         </select>
+                    </p>
+                    <p id="custom_fee_type_row" style="display:none;">
+                        <label for="custom_fee_type">Custom Fee Name *</label>
+                        <input type="text" name="custom_fee_type" id="custom_fee_type" class="regular-text" placeholder="e.g. Notary Fee">
                     </p>
                     <p>
                         <label for="fee_amount">Fee Amount ($)</label>

@@ -181,6 +181,7 @@ class NSS_Calculator {
         $courier_fee       = '0.00';
         $deed_prep_fee     = '0.00';
         $wire_transfer_fee = '0.00';
+        $custom_fees       = [];
 
         foreach ($static_fees as $fee) {
             switch ($fee->fee_type) {
@@ -193,16 +194,22 @@ class NSS_Calculator {
                 case 'wire_transfer':
                     $wire_transfer_fee = $fee->fee_amount;
                     break;
+                default:
+                    $custom_fees[] = [
+                        'label'  => $fee->fee_type,
+                        'amount' => (string) $fee->fee_amount,
+                    ];
             }
         }
 
-        $total_title_fees = NSS_Precision_Math::sum([
+        $custom_totals    = array_column($custom_fees, 'amount');
+        $total_title_fees = NSS_Precision_Math::sum(array_merge([
             $closing_fee,
             $owner_policy_fee,
             $courier_fee,
             $deed_prep_fee,
             $wire_transfer_fee,
-        ]);
+        ], $custom_totals));
 
         $this->results['title_fees'] = [
             'closing_fee'       => (string) $closing_fee,
@@ -210,6 +217,7 @@ class NSS_Calculator {
             'courier_fee'       => (string) $courier_fee,
             'deed_prep_fee'     => (string) $deed_prep_fee,
             'wire_transfer_fee' => (string) $wire_transfer_fee,
+            'custom_fees'       => $custom_fees,
             'total'             => $total_title_fees,
         ];
     }
