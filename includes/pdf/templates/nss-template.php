@@ -178,14 +178,14 @@ body {
 <body>
 
 <!-- Header -->
-<table class="header-table" cellspacing="0" cellpadding="0">
+<table width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
     <tr>
-        <td class="header-logo-td">
-            <img src="<?php echo esc_attr($atg_logo); ?>" alt="ATG Logo">
+        <td width="100" style="background:#ffffff; padding:8px 10px; vertical-align:middle;">
+            <img src="<?php echo esc_attr($atg_logo); ?>" alt="ATG Logo" width="80" style="width:80px; height:auto; display:block;">
         </td>
-        <td class="header-title-td">
-            <div class="header-main-title">Affiliates Title Group, LLC</div>
-            <div class="header-sub-title">Seller Net Sheet &mdash; Estimated Net Proceeds</div>
+        <td style="background-color:#003366; padding:10px 16px; vertical-align:middle;">
+            <div style="color:#ffffff; font-size:18pt; font-weight:bold; line-height:1.1;">Affiliates Title Group, LLC</div>
+            <div style="color:#a8c8f0; font-size:9pt; margin-top:3px;">Seller Net Sheet &mdash; Estimated Net Proceeds</div>
         </td>
     </tr>
 </table>
