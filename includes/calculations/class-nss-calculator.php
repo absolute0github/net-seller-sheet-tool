@@ -70,11 +70,14 @@ class NSS_Calculator {
         ));
 
         if (!$fee_data) {
+            // Default: $4.00 per $1,000, seller pays 100%
+            $thousands     = NSS_Precision_Math::divide($sales_price, 1000);
+            $default_fee   = NSS_Precision_Math::multiply($thousands, 4);
             $this->results['conveyance_fees'] = [
-                'rate'               => 0,
-                'amount'             => '0.00',
-                'seller_percentage'  => 1.0,
-                'seller_amount'      => '0.00',
+                'rate'              => 4.0,
+                'amount'            => $default_fee,
+                'seller_percentage' => 1.0,
+                'seller_amount'     => $default_fee,
             ];
             return;
         }
@@ -165,7 +168,7 @@ class NSS_Calculator {
             WHERE county_name = %s AND is_active = 1",
             $county
         ));
-        $closing_fee = $closing_fee ?? 0;
+        $closing_fee = $closing_fee ?? 375.00; // Default: $375.00 if no county record
 
         // Owner's policy — always calculated using tiered OTIRB rates
         $property_value   = new NSS_Property_Value($sales_price);
