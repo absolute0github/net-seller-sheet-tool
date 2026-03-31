@@ -102,9 +102,9 @@
 
     // ── AJAX: Save sheet ──────────────────────────────────────────────────────
 
-    function saveSheet(callback) {
+    function saveSheet(onSuccess, onError) {
         if (currentSheetId) {
-            callback(currentSheetId);
+            onSuccess(currentSheetId);
             return;
         }
 
@@ -119,17 +119,22 @@
             success: function(response) {
                 if (response.success) {
                     currentSheetId = response.data.id;
-                    callback(currentSheetId);
+                    onSuccess(currentSheetId);
                 } else {
-                    showError(response.data.message || 'Error saving sheet.');
+                    var msg = (response.data && response.data.message) ? response.data.message : 'Error saving sheet.';
+                    showPreviewError(msg);
+                    if (onError) onError(msg);
                 }
             },
             error: function(xhr) {
                 var msg = 'Error saving sheet.';
                 if (xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
                     msg = xhr.responseJSON.data.message;
+                } else if (xhr.responseText) {
+                    msg = 'Save failed (status ' + xhr.status + '). Please try again.';
                 }
-                showError(msg);
+                showPreviewError(msg);
+                if (onError) onError(msg);
             },
         });
     }
@@ -138,10 +143,15 @@
         var $btn = $('#nss-preview-pdf-btn');
         $btn.prop('disabled', true).text('Saving\u2026');
 
-        saveSheet(function(id) {
-            $btn.prop('disabled', false).text('Download PDF');
-            downloadPDF(id);
-        });
+        saveSheet(
+            function(id) {
+                $btn.prop('disabled', false).text('Download PDF');
+                downloadPDF(id);
+            },
+            function() {
+                $btn.prop('disabled', false).text('Download PDF');
+            }
+        );
     }
 
     // ── AJAX: Download PDF ────────────────────────────────────────────────────
@@ -411,6 +421,17 @@
     function showError(message) {
         $('#nss-error').text(message).show();
         $('html, body').animate({ scrollTop: $('#nss-error').offset().top - 40 }, 200);
+    }
+
+    /** Show an error visible while the preview is active */
+    function showPreviewError(message) {
+        var $err = $('#nss-preview-error');
+        if (!$err.length) {
+            $err = $('<div id="nss-preview-error" class="nss-error" style="margin:8px 0;"></div>');
+            $('#nss-sheet-preview').prepend($err);
+        }
+        $err.text(message).show();
+        $('html, body').animate({ scrollTop: $err.offset().top - 40 }, 200);
     }
 
     function hideError() {
