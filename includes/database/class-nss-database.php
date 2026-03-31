@@ -35,7 +35,7 @@ class NSS_Database {
             user_id BIGINT UNSIGNED NOT NULL,
             property_address VARCHAR(255) NOT NULL,
             property_city VARCHAR(100),
-            property_state VARCHAR(2),
+            property_state VARCHAR(100),
             property_county VARCHAR(100),
             property_zip VARCHAR(10),
             sales_price DECIMAL(18,2) NOT NULL,
