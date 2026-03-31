@@ -31,6 +31,12 @@ class NSS_Database {
         if (version_compare((string) $from_version, '5', '<')) {
             $wpdb->query("ALTER TABLE `{$table}` MODIFY COLUMN `property_state` VARCHAR(100)");
         }
+
+        // v6: convert static_title_fees.fee_type from ENUM to VARCHAR(100)
+        $static_table = $wpdb->prefix . 'nss_static_title_fees';
+        if (version_compare((string) $from_version, '6', '<')) {
+            $wpdb->query("ALTER TABLE `{$static_table}` MODIFY COLUMN `fee_type` VARCHAR(100) NOT NULL");
+        }
     }
 
     /**
@@ -115,7 +121,7 @@ class NSS_Database {
         // 5. Static title fees table (courier, deed prep, wire)
         $sql[] = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}nss_static_title_fees (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-            fee_type ENUM('courier', 'deed_prep', 'wire_transfer') NOT NULL UNIQUE,
+            fee_type VARCHAR(100) NOT NULL,
             fee_amount DECIMAL(18,2) NOT NULL,
             is_active TINYINT(1) DEFAULT 1,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
