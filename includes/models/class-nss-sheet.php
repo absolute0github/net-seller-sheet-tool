@@ -79,7 +79,7 @@ class NSS_Sheet {
             'loan_payoff_1'        => floatval($data['loan_payoff_1'] ?? 0),
             'loan_payoff_2'        => floatval($data['loan_payoff_2'] ?? 0),
             'loan_payoff_3'        => floatval($data['loan_payoff_3'] ?? 0),
-            'closing_date'         => sanitize_text_field($data['closing_date'] ?? date('Y-m-d')),
+            'closing_date'         => !empty($data['closing_date']) ? sanitize_text_field($data['closing_date']) : null,
             'hoa_fees'             => floatval($data['hoa_fees'] ?? 0),
             'tax_info'             => json_encode($data['tax_info'] ?? []),
             'commission_structure' => json_encode($data['commission_structure'] ?? []),

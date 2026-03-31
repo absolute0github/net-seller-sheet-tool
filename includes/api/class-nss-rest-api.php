@@ -267,7 +267,9 @@ class NSS_REST_API {
         if ($sheet_id) {
             wp_send_json_success(['id' => $sheet_id]);
         } else {
-            wp_send_json_error(['message' => 'Failed to save sheet']);
+            global $wpdb;
+            $db_error = $wpdb->last_error ?: 'Unknown DB error';
+            wp_send_json_error(['message' => 'Failed to save sheet: ' . $db_error]);
         }
     }
 
