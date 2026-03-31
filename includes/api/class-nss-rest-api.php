@@ -243,8 +243,9 @@ class NSS_REST_API {
         check_ajax_referer('nss_frontend_nonce', 'nonce');
 
         // Allow guests to calculate (no capability check needed)
-        $data = json_decode(stripslashes($_POST['sheet_data']), true);
-        $calculator = new NSS_Calculator($data);
+        $data      = json_decode(stripslashes($_POST['sheet_data']), true);
+        $sanitized = NSS_Security::sanitize_sheet_data($data);
+        $calculator = new NSS_Calculator($sanitized);
         $results = $calculator->calculate();
 
         wp_send_json_success($results);
