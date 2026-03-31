@@ -318,14 +318,6 @@ body {
         </tr>
         <?php endif; ?>
 
-        <!-- RECORDING FEES -->
-        <tr class="section-header"><td colspan="3">Recording Fees</td></tr>
-        <tr>
-            <td class="col-desc indented">Recording Fees</td>
-            <td class="col-debit"><?php echo nss_pdf_amount($results['recording_fees']['total']); ?></td>
-            <td class="col-credit">&mdash;</td>
-        </tr>
-
         <!-- HOA -->
         <?php if (!empty($sheet_data['hoa_fees']) && floatval($sheet_data['hoa_fees']) > 0): ?>
         <tr class="section-header"><td colspan="3">HomeOwners Association</td></tr>

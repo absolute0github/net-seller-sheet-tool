@@ -323,10 +323,6 @@
             + sectionRow('Payoffs')
             + payoffRows
 
-            // Recording Fees
-            + sectionRow('Recording Fees')
-            + row('Recording Fees', pAmt(r.recording_fees.total), '\u2014')
-
             // HOA (conditional)
             + hoaSection
 

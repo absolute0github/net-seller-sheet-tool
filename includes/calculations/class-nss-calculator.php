@@ -24,7 +24,6 @@ class NSS_Calculator {
         $this->calculate_tax_proration();
         $this->calculate_commission();
         $this->calculate_title_fees();
-        $this->calculate_recording_fees();
         $this->calculate_total_deductions();
         $this->calculate_net_proceeds();
 
@@ -216,22 +215,6 @@ class NSS_Calculator {
     }
 
     /**
-     * Calculate recording fees
-     */
-    private function calculate_recording_fees() {
-        $num_parcels   = $this->sheet_data['num_parcels'] ?? 1;
-        $fee_per_parcel = $this->sheet_data['parcel_fee'] ?? 35.00;
-
-        $total = NSS_Precision_Math::multiply($num_parcels, $fee_per_parcel);
-
-        $this->results['recording_fees'] = [
-            'num_parcels'    => (int) $num_parcels,
-            'fee_per_parcel' => (string) $fee_per_parcel,
-            'total'          => $total,
-        ];
-    }
-
-    /**
      * Calculate total of all deductions
      */
     private function calculate_total_deductions() {
@@ -242,7 +225,6 @@ class NSS_Calculator {
             $this->results['tax_proration']['tax_hold'],
             $this->results['commission']['amount'],
             $this->results['title_fees']['total'],
-            $this->results['recording_fees']['total'],
         ];
 
         // Add HOA fees
