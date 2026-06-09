@@ -90,6 +90,9 @@ class NSS_Plugin {
         add_action('wp_ajax_nss_lookup_county', [$this, 'ajax_lookup_county']);
         add_action('wp_ajax_nopriv_nss_lookup_county', [$this, 'ajax_lookup_county']);
 
+        // Admin-only: test Radar.io connection
+        add_action('wp_ajax_nss_test_radar', [$this, 'ajax_test_radar_connection']);
+
         // Load text domain
         add_action('plugins_loaded', [$this, 'load_textdomain']);
     }
@@ -358,13 +361,23 @@ class NSS_Plugin {
         ]);
 
         if (is_wp_error($response)) {
-            wp_send_json_error(['message' => 'API request failed']);
+            $error_msg = $response->get_error_message();
+            error_log('NSS Autocomplete: wp_remote_get failed - ' . $error_msg);
+            wp_send_json_error(['message' => 'API request failed: ' . $error_msg]);
         }
 
+        $http_code = wp_remote_retrieve_response_code($response);
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
 
+        if ($http_code !== 200) {
+            $radar_message = $data['meta']['message'] ?? $data['message'] ?? 'HTTP ' . $http_code;
+            error_log('NSS Autocomplete: Radar.io returned HTTP ' . $http_code . ' - ' . $radar_message);
+            wp_send_json_error(['message' => 'Radar.io error: ' . $radar_message]);
+        }
+
         if (!$data || !isset($data['addresses'])) {
+            error_log('NSS Autocomplete: Unexpected response structure - ' . substr($body, 0, 500));
             wp_send_json_error(['message' => 'Invalid API response']);
         }
 
@@ -387,6 +400,61 @@ class NSS_Plugin {
         }
 
         wp_send_json_success(['addresses' => $addresses]);
+    }
+
+    /**
+     * Admin AJAX: test Radar.io API connection and report diagnostics
+     */
+    public function ajax_test_radar_connection() {
+        if (!current_user_can('manage_nss_settings')) {
+            wp_send_json_error(['message' => 'Permission denied'], 403);
+        }
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'nss_admin_nonce')) {
+            wp_send_json_error(['message' => 'Invalid nonce'], 403);
+        }
+
+        $api_key = get_option('nss_radar_api_key', '');
+        if (empty($api_key)) {
+            wp_send_json_error(['message' => 'API key not configured in settings.']);
+        }
+
+        $request_url = 'https://api.radar.io/v1/search/autocomplete?' . http_build_query([
+            'query' => 'Columbus',
+            'limit' => 1,
+            'country' => 'US',
+            'layers' => 'address',
+        ]);
+
+        $response = wp_remote_get($request_url, [
+            'headers' => ['Authorization' => $api_key],
+            'timeout' => 10,
+        ]);
+
+        if (is_wp_error($response)) {
+            wp_send_json_error([
+                'message' => 'Connection failed: ' . $response->get_error_message(),
+                'hint' => 'The server could not reach api.radar.io. Check firewall/outbound rules.',
+            ]);
+        }
+
+        $http_code = wp_remote_retrieve_response_code($response);
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+
+        if ($http_code !== 200) {
+            $radar_message = $data['meta']['message'] ?? $data['message'] ?? 'HTTP ' . $http_code;
+            wp_send_json_error([
+                'message' => 'Radar.io returned HTTP ' . $http_code . ': ' . $radar_message,
+                'hint' => $http_code === 401 ? 'API key is invalid or has been revoked.' : 'Check your Radar.io account/key settings.',
+            ]);
+        }
+
+        $count = count($data['addresses'] ?? []);
+        wp_send_json_success([
+            'message' => 'Connection successful. Radar.io returned ' . $count . ' result(s) for test query.',
+            'php_version' => PHP_VERSION,
+            'wp_version' => get_bloginfo('version'),
+        ]);
     }
 
     /**

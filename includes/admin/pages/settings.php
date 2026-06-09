@@ -70,7 +70,9 @@ $restrict_ohio = get_option('nss_restrict_ohio', 1);
                 </th>
                 <td>
                     <input type="text" id="radar_api_key" name="radar_api_key" value="<?php echo esc_attr($radar_api_key); ?>" class="regular-text">
-                    <p class="description">Your Radar.io publishable API key</p>
+                    <p class="description">Your Radar.io publishable or secret API key</p>
+                    <button type="button" id="nss-test-radar" class="button button-secondary" style="margin-top:6px;">Test Connection</button>
+                    <span id="nss-test-radar-result" style="margin-left:10px;"></span>
                 </td>
             </tr>
 

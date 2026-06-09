@@ -9,6 +9,7 @@
         initFeeHandlers();
         initSheetHandlers();
         initStats();
+        initRadarTest();
     });
 
     /**
@@ -297,6 +298,45 @@
                 }
             });
         }
+    }
+
+    /**
+     * Test Radar.io API connection from settings page
+     */
+    function initRadarTest() {
+        $('#nss-test-radar').on('click', function() {
+            var $btn = $(this);
+            var $result = $('#nss-test-radar-result');
+
+            $btn.prop('disabled', true).text('Testing...');
+            $result.text('').css('color', '');
+
+            $.ajax({
+                url: nssAdmin.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'nss_test_radar',
+                    nonce: nssAdmin.nonce,
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $result.text('✓ ' + response.data.message).css('color', 'green');
+                    } else {
+                        var msg = response.data.message;
+                        if (response.data.hint) {
+                            msg += ' — ' + response.data.hint;
+                        }
+                        $result.text('✗ ' + msg).css('color', 'red');
+                    }
+                },
+                error: function() {
+                    $result.text('✗ Request failed (check browser console)').css('color', 'red');
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).text('Test Connection');
+                }
+            });
+        });
     }
 
 })(jQuery);
