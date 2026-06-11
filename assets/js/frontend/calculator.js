@@ -312,7 +312,7 @@
             // Financial
             + sectionRow('Financial')
             + row('Sale Price of the Property',             '\u2014',                           pAmt(r.net_proceeds.sales_price, true))
-            + row('Seller\'s Owner\'s Title Policy (OTIRB)', pAmt(r.title_fees.owner_policy_fee), '\u2014')
+            + row('Seller\'s Owner\'s Title Policy (OTIRB) \u2013 50% Seller\'s Portion', pAmt(r.title_fees.owner_policy_seller_fee), '\u2014')
 
             // Prorations
             + sectionRow('Prorations / Adjustments')
@@ -324,6 +324,7 @@
             // Title Charges
             + sectionRow('Title Charges &amp; Escrow / Settlement Charges')
             + row('Closing Fee', pAmt(r.title_fees.closing_fee), '\u2014')
+            + (parseFloat(r.title_fees.title_exam_fee) > 0 ? row('Title Search/Exam Fee', pAmt(r.title_fees.title_exam_fee), '\u2014') : '')
             + courierRow + deedPrepRow + wireRow + customFeeRows
 
             // Real Estate Charges

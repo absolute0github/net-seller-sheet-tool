@@ -223,8 +223,8 @@ body {
             <td class="col-credit"><?php echo nss_pdf_amount($results['net_proceeds']['sales_price'], true); ?></td>
         </tr>
         <tr>
-            <td class="col-desc indented">Seller&rsquo;s Owner&rsquo;s Title Policy (OTIRB)</td>
-            <td class="col-debit"><?php echo nss_pdf_amount($results['title_fees']['owner_policy_fee']); ?></td>
+            <td class="col-desc indented">Seller&rsquo;s Owner&rsquo;s Title Policy (OTIRB) &ndash; 50% Seller&rsquo;s Portion</td>
+            <td class="col-debit"><?php echo nss_pdf_amount($results['title_fees']['owner_policy_seller_fee']); ?></td>
             <td class="col-credit">&mdash;</td>
         </tr>
 
@@ -253,6 +253,13 @@ body {
             <td class="col-debit"><?php echo nss_pdf_amount($results['title_fees']['closing_fee']); ?></td>
             <td class="col-credit">&mdash;</td>
         </tr>
+        <?php if (floatval($results['title_fees']['title_exam_fee']) > 0): ?>
+        <tr>
+            <td class="col-desc indented">Title Search/Exam Fee</td>
+            <td class="col-debit"><?php echo nss_pdf_amount($results['title_fees']['title_exam_fee']); ?></td>
+            <td class="col-credit">&mdash;</td>
+        </tr>
+        <?php endif; ?>
         <?php if (floatval($results['title_fees']['courier_fee']) > 0): ?>
         <tr>
             <td class="col-desc indented">Courier Fee</td>

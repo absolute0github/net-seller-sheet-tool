@@ -168,12 +168,21 @@ class NSS_Calculator {
             WHERE county_name = %s AND is_active = 1",
             $county
         ));
-        $closing_fee = $closing_fee ?? 375.00; // Default: $375.00 if no county record
+        $closing_fee = $closing_fee ?? 325.00; // Default: $325.00 if no county record
 
-        // Owner's policy — always calculated using tiered OTIRB rates
-        $property_value   = new NSS_Property_Value($sales_price);
-        $insurance_result = $property_value->calculate_title_insurance($sales_price);
-        $owner_policy_fee = $insurance_result['premium'];
+        // Title exam/search fee (county-specific)
+        $title_exam_fee = $wpdb->get_var($wpdb->prepare(
+            "SELECT fee_amount FROM {$wpdb->prefix}nss_title_exam_fees
+            WHERE county_name = %s AND is_active = 1",
+            $county
+        ));
+        $title_exam_fee = $title_exam_fee ?? 325.00; // Default: $325.00 if no county record
+
+        // Owner's policy — always calculated using tiered OTIRB rates; split 50/50 buyer/seller
+        $property_value        = new NSS_Property_Value($sales_price);
+        $insurance_result      = $property_value->calculate_title_insurance($sales_price);
+        $owner_policy_fee      = $insurance_result['premium'];
+        $owner_policy_seller_fee = NSS_Precision_Math::divide($owner_policy_fee, '2');
 
         // Static fees
         $static_fees = $wpdb->get_results(
@@ -208,20 +217,23 @@ class NSS_Calculator {
         $custom_totals    = array_column($custom_fees, 'amount');
         $total_title_fees = NSS_Precision_Math::sum(array_merge([
             $closing_fee,
-            $owner_policy_fee,
+            $title_exam_fee,
+            $owner_policy_seller_fee,
             $courier_fee,
             $deed_prep_fee,
             $wire_transfer_fee,
         ], $custom_totals));
 
         $this->results['title_fees'] = [
-            'closing_fee'       => (string) $closing_fee,
-            'owner_policy_fee'  => $owner_policy_fee,
-            'courier_fee'       => (string) $courier_fee,
-            'deed_prep_fee'     => (string) $deed_prep_fee,
-            'wire_transfer_fee' => (string) $wire_transfer_fee,
-            'custom_fees'       => $custom_fees,
-            'total'             => $total_title_fees,
+            'closing_fee'            => (string) $closing_fee,
+            'title_exam_fee'         => (string) $title_exam_fee,
+            'owner_policy_fee'       => $owner_policy_fee,
+            'owner_policy_seller_fee'=> $owner_policy_seller_fee,
+            'courier_fee'            => (string) $courier_fee,
+            'deed_prep_fee'          => (string) $deed_prep_fee,
+            'wire_transfer_fee'      => (string) $wire_transfer_fee,
+            'custom_fees'            => $custom_fees,
+            'total'                  => $total_title_fees,
         ];
     }
 

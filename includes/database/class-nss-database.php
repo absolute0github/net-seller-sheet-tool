@@ -118,7 +118,20 @@ class NSS_Database {
             KEY is_active (is_active)
         ) $charset_collate;";
 
-        // 5. Static title fees table (courier, deed prep, wire)
+        // 5. Title exam fees table (county-specific title search/exam fees)
+        $sql[] = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}nss_title_exam_fees (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            county_name VARCHAR(100) NOT NULL,
+            state VARCHAR(2),
+            fee_amount DECIMAL(18,2) NOT NULL,
+            is_active TINYINT(1) DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            KEY county_name (county_name),
+            KEY is_active (is_active)
+        ) $charset_collate;";
+
+        // 6. Static title fees table (courier, deed prep, wire)
         $sql[] = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}nss_static_title_fees (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             fee_type VARCHAR(100) NOT NULL,
@@ -129,7 +142,7 @@ class NSS_Database {
             KEY is_active (is_active)
         ) $charset_collate;";
 
-        // 6. ZIP to County mapping table (for Ohio)
+        // 7. ZIP to County mapping table (for Ohio)
         $sql[] = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}nss_zip_county (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             zip_code VARCHAR(5) NOT NULL,

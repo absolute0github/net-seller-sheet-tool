@@ -8,7 +8,7 @@ if (!current_user_can('manage_nss_fees')) {
 }
 
 $fee_type = sanitize_text_field($_GET['type'] ?? 'conveyance');
-$valid_types = ['conveyance', 'property_value', 'title_closing', 'static_fee'];
+$valid_types = ['conveyance', 'property_value', 'title_closing', 'title_exam', 'static_fee'];
 
 if (!in_array($fee_type, $valid_types)) {
     $fee_type = 'conveyance';
@@ -26,6 +26,7 @@ $fees = NSS_Fee::get_all($fee_type);
             <li><a href="<?php echo esc_url(admin_url('admin.php?page=nss-fees&type=conveyance')); ?>" class="nav-tab <?php echo $fee_type === 'conveyance' ? 'nav-tab-active' : ''; ?>">Conveyance Fees</a></li>
             <li><a href="<?php echo esc_url(admin_url('admin.php?page=nss-fees&type=property_value')); ?>" class="nav-tab <?php echo $fee_type === 'property_value' ? 'nav-tab-active' : ''; ?>">Title Insurance Rates</a></li>
             <li><a href="<?php echo esc_url(admin_url('admin.php?page=nss-fees&type=title_closing')); ?>" class="nav-tab <?php echo $fee_type === 'title_closing' ? 'nav-tab-active' : ''; ?>">Title Closing Fees</a></li>
+            <li><a href="<?php echo esc_url(admin_url('admin.php?page=nss-fees&type=title_exam')); ?>" class="nav-tab <?php echo $fee_type === 'title_exam' ? 'nav-tab-active' : ''; ?>">Title Exam Fees</a></li>
             <li><a href="<?php echo esc_url(admin_url('admin.php?page=nss-fees&type=static_fee')); ?>" class="nav-tab <?php echo $fee_type === 'static_fee' ? 'nav-tab-active' : ''; ?>">Static Fees</a></li>
         </ul>
     </div>
@@ -55,7 +56,7 @@ $fees = NSS_Fee::get_all($fee_type);
                                 <?php elseif ($fee_type === 'property_value'): ?>
                                     <strong><?php echo esc_html($fee->tier_name); ?></strong><br>
                                     <?php echo NSS_Formatting::currency($fee->min_price); ?> &ndash; <?php echo NSS_Formatting::currency($fee->max_price); ?> @ $<?php echo esc_html(number_format((float)$fee->rate, 2)); ?>/k
-                                <?php elseif ($fee_type === 'title_closing'): ?>
+                                <?php elseif ($fee_type === 'title_closing' || $fee_type === 'title_exam'): ?>
                                     <strong><?php echo esc_html($fee->county_name); ?></strong><br>
                                     <?php echo NSS_Formatting::currency($fee->fee_amount); ?>
                                 <?php elseif ($fee_type === 'static_fee'): ?>

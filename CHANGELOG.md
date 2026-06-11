@@ -5,6 +5,14 @@ All notable changes to the Net Seller Sheet plugin will be documented in this fi
 ## [Unreleased]
 
 ### Added
+- Title Search/Exam Fee now displayed as its own line item separate from Closing Fee (uses new `nss_title_exam_fees` DB table, default $325.00; manageable per-county in Admin → Fee Configuration → Title Exam Fees)
+- `nss_title_exam_fees` database table created on plugin activation
+
+### Changed
+- Owner's Title Policy (OTIRB) now split 50/50 between buyer and seller; only the seller's 50% portion is deducted on the net seller sheet
+- Closing Fee default changed from $375.00 to $325.00 to reflect the separate title exam fee line
+
+### Previous
 - Sheet preview page: after clicking Calculate, the form is replaced by a full-page preview that mirrors the PDF layout (ATG header, Debit/Credit table, section groupings). Users can click "Edit" to return to the form or "Download PDF" to save and download in one step.
 - "Download PDF" in the preview auto-saves the sheet before downloading, so no separate Save step is required.
 - Guest users see a login/register prompt in place of the PDF button.
