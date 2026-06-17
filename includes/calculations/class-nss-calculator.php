@@ -170,6 +170,11 @@ class NSS_Calculator {
         ));
         $closing_fee = $closing_fee ?? 325.00; // Default: $325.00 if no county record
 
+        $seller_pays_full = !empty($this->sheet_data['seller_pays_full_closing_fee']);
+        if (!$seller_pays_full) {
+            $closing_fee = NSS_Precision_Math::divide($closing_fee, '2');
+        }
+
         // Title exam/search fee (county-specific)
         $title_exam_fee = $wpdb->get_var($wpdb->prepare(
             "SELECT fee_amount FROM {$wpdb->prefix}nss_title_exam_fees
@@ -225,7 +230,8 @@ class NSS_Calculator {
         ], $custom_totals));
 
         $this->results['title_fees'] = [
-            'closing_fee'            => (string) $closing_fee,
+            'closing_fee'                  => (string) $closing_fee,
+            'seller_pays_full_closing_fee' => $seller_pays_full,
             'title_exam_fee'         => (string) $title_exam_fee,
             'owner_policy_fee'       => $owner_policy_fee,
             'owner_policy_seller_fee'=> $owner_policy_seller_fee,
