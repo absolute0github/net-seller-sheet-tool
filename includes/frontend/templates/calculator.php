@@ -90,6 +90,13 @@ $is_dev = (strpos(get_site_url(), '.local') !== false) || (defined('WP_DEBUG') &
                         <input type="date" id="closing_date" name="closing_date">
                     </div>
                 </div>
+
+                <div class="nss-form-group nss-checkbox-group">
+                    <label class="nss-checkbox-label">
+                        <input type="checkbox" id="seller_pays_full_closing_fee" name="seller_pays_full_closing_fee" value="1">
+                        Click Here if Seller pays 100% of the Closing Fee
+                    </label>
+                </div>
             </div>
 
             <div class="nss-form-actions">

@@ -249,7 +249,7 @@ body {
         <!-- TITLE CHARGES -->
         <tr class="section-header"><td colspan="3">Title Charges &amp; Escrow / Settlement Charges</td></tr>
         <tr>
-            <td class="col-desc indented">Closing Fee</td>
+            <td class="col-desc indented">Closing Fee<?php echo empty($results['title_fees']['seller_pays_full_closing_fee']) ? ' (Seller&#39;s 1/2)' : ''; ?></td>
             <td class="col-debit"><?php echo nss_pdf_amount($results['title_fees']['closing_fee']); ?></td>
             <td class="col-credit">&mdash;</td>
         </tr>

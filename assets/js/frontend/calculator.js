@@ -323,7 +323,7 @@
 
             // Title Charges
             + sectionRow('Title Charges &amp; Escrow / Settlement Charges')
-            + row('Closing Fee', pAmt(r.title_fees.closing_fee), '\u2014')
+            + row('Closing Fee' + (r.title_fees.seller_pays_full_closing_fee ? '' : " (Seller\u2019s 1/2)"), pAmt(r.title_fees.closing_fee), '\u2014')
             + (parseFloat(r.title_fees.title_exam_fee) > 0 ? row('Title Search/Exam Fee', pAmt(r.title_fees.title_exam_fee), '\u2014') : '')
             + courierRow + deedPrepRow + wireRow + customFeeRows
 

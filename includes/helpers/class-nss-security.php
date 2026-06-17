@@ -109,6 +109,7 @@ class NSS_Security {
             'commission_structure' => [
                 'agent_commission_percentage' => floatval($data['agent_commission_percentage'] ?? 0),
             ],
+            'seller_pays_full_closing_fee' => !empty($data['seller_pays_full_closing_fee']),
         ];
     }
 
